@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.Objects;
 
 public class DirExplorer {
     public interface FileHandler {
@@ -23,7 +24,7 @@ public class DirExplorer {
 
     private void explore(int level, String path, File file) {
         if (file.isDirectory()) {
-            for (File child : file.listFiles()) {
+            for (File child : Objects.requireNonNull(file.listFiles())) {
                 explore(level + 1, path + "/" + child.getName(), child);
             }
         } else {
