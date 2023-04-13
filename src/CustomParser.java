@@ -10,11 +10,9 @@ import jxl.write.WriteException;
 
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 
 public class CustomParser {
@@ -29,41 +27,41 @@ public class CustomParser {
         StaticJavaParser.setConfiguration(config);
 
         //Define the root directory of project
-//        //1
-//        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/1 - QuickUML 2001";
-//        String projectName = "QuickUML 2001";
+        //1
+        String filePath = "projects/1 - QuickUML 2001";
+        String projectName = "QuickUML 2001";
 
 //        //2
-//        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/2 - Lexi v0.1.1 alpha";
+//        String filePath = "projects/2 - Lexi v0.1.1 alpha";
 //        String projectName = "Lexi v0.1.1 alpha";
 
 //        //3
-//        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/3 - JRefactory v2.6.24";
+//        String filePath = "projects/3 - JRefactory v2.6.24";
 //        String projectName = " JRefactory";
 
 //        //4
-//        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/4 - Netbeans v1.0.x (1)";
+//        String filePath = "projects/4 - Netbeans v1.0.x (1)";
 //        String projectName = "Netbeans";
 
 //        //5
-//        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/5 - JUnit v3.7";
+//        String filePath = "projects/5 - JUnit v3.7";
 //        String projectName = "JUnit";
 
 //        //6
-//        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/6 - JHotDraw v5.1";
+//        String filePath = "projects/6 - JHotDraw v5.1";
 //        String projectName = "JHotDraw";
 
 //        //7
-//        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/7 - MapperXML v1.9.7";
+//        String filePath = "projects/7 - MapperXML v1.9.7";
 //        String projectName = "MapperXML";
 
 //        //8
-//        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/8 - Nutch v0.4";
+//        String filePath = "projects/8 - Nutch v0.4";
 //        String projectName = "Nutch";
 
-        //9
-        String filePath = "/home/bahareh/IdeaProjects/OOD_Spring2023/projects/9 - PMD v1.8";
-        String projectName = "PMD";
+//        //9
+//        String filePath = "projects/9 - PMD v1.8";
+//        String projectName = "PMD";
 
         File projectRoot = new File(filePath);
 
