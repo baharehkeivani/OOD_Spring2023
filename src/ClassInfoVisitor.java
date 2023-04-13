@@ -94,21 +94,15 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
         record.setFields(String.join(" , ",fields));
 
         /* ----------------------------------------------- methods ----------------------------------------------- */
+        /* ----------------------- override  *  has static/final/abstract  method--------------------------------- */
         List<String> methods = new ArrayList<>();
-        for (MethodDeclaration item : n.getMethods()) {
-            String str = "";
-            str += (item.getName().asString() + " - return type : " + item.getType().asString() + " - parameters : " + item.getParameters().toString());
-            methods.add(str);
-        }
-        record.setMethods(String.join(" , ",methods));
-
-        /* ----------------------- override  *  has static/final/abstract  method-------------------------------- */
         List<String> overriddenMethods = new ArrayList<>();
         List<String> staticMethods = new ArrayList<>();
         List<String> finalMethods = new ArrayList<>();
         List<String> abstractMethods = new ArrayList<>();
         for (MethodDeclaration method : n.getMethods()) {
             Optional<AnnotationExpr> overrideAnnotation = method.getAnnotationByName("Override");
+            methods.add(method.getName().asString() + " - return type : " + method.getType().asString() + " - parameters : " + method.getParameters().toString());
             if (overrideAnnotation.isPresent()) {
                 overriddenMethods.add( method.getNameAsString() + " - parameters : " + method.getParameters().toString() + " - return type : " + method.getType());
             }
@@ -122,6 +116,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
                 staticMethods.add(method.getNameAsString());
             }
         }
+        record.setMethods(String.join(" , ",methods));
         record.setOverride(String.join(" , ",overriddenMethods));
         record.setHas_static_method(String.join(" , ",staticMethods));
         record.setHas_abstract_method(String.join(" , ",abstractMethods));
