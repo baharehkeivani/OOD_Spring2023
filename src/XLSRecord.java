@@ -24,6 +24,11 @@ public class XLSRecord {
     private String has_static_method = "";
     private String has_final_method = "";
     private String has_abstract_method = "";
+    private String association="";
+    private String aggregation ="";
+    private String delegation = "";
+    private String composition = "";
+    private String instantiation = "";
 
     public XLSRecord(int row) {
         this.row = row;

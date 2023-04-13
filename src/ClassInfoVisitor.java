@@ -127,6 +127,17 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
         record.setHas_abstract_method(String.join(" , ",abstractMethods));
         record.setHas_final_method(String.join(" , ",finalMethods));
 
+        /* -------------------------------- Association (any relationship) --------------------------------------- */
+        List<String> associations = new ArrayList<>();
+        for (ClassOrInterfaceDeclaration classDeclaration : n.findAll(ClassOrInterfaceDeclaration.class)) {
+            for (FieldDeclaration field : classDeclaration.getFields()) {
+                if (field.getElementType().isReferenceType()) {
+                    associations.add( classDeclaration.getNameAsString() + " -> " + field.getElementType().asReferenceType().toString());
+                }
+            }
+        }
+
+
         super.visit(n, arg);
 
     }
