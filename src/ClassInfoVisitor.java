@@ -7,17 +7,12 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
-import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
-import jxl.Workbook;
-import jxl.write.Label;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -40,12 +35,10 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
 
         /* -------------------------------------------- class visibility ----------------------------------------- */
         String visible = n.getAccessSpecifier().asString();
-        if (visible == "public") {
-            record.setClass_Visibility(1);
-        } else if (visible == "private") {
-            record.setClass_Visibility(2);
-        } else if (visible == "protected") {
-            record.setClass_Visibility(3);
+        switch (visible) {
+            case "public" -> record.setClass_Visibility(1);
+            case "private" -> record.setClass_Visibility(2);
+            case "protected" -> record.setClass_Visibility(3);
         }
 
         /* -------------------------------------------- class is abstract ---------------------------------------- */
@@ -87,7 +80,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
         List<String> fields = new ArrayList<>();
         for (FieldDeclaration item : n.getFields()) {
             String str = "";
-            boolean isDefault = item.getAccessSpecifier().equals("NONE");
+            boolean isDefault = item.getAccessSpecifier().toString().equals("NONE");
             str += (item.getClass().getName() + " - type : " + (isDefault ? "DEFAULT" : item.getAccessSpecifier()));
             fields.add(str);
         }
@@ -131,6 +124,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
                 }
             }
         }
+        record.setAggregation(String.join(" , ",associations));
 
 
         super.visit(n, arg);
