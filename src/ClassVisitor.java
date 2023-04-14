@@ -4,6 +4,9 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -16,11 +19,17 @@ import java.util.Optional;
 
 @Getter
 @Setter
-public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
+public class ClassVisitor extends VoidVisitorAdapter<Void> {
 
     XLSRecord record = new XLSRecord(CustomParser.currentRow);
 
     public void visit(ClassOrInterfaceDeclaration n, Void arg) {
+        class_analyze(n);
+        relationship_analyze(n);
+        super.visit(n, arg);
+    }
+
+    private void class_analyze(ClassOrInterfaceDeclaration n) {
         /* -------------------------------------------- class name ---------------------------------------------- */
         record.setClass_Name(n.getClass().getName());
 
@@ -65,7 +74,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
         List<String> children = new ArrayList<>();
         for (Node item : n.getChildNodes())
             children.add(item.getClass().getName());
-        record.setChildren(children.isEmpty() ? "0" : String.join(" , \n",children));
+        record.setChildren(children.isEmpty() ? "0" : String.join(" , \n", children));
 
         /* ------------------------------------------- constructor ----------------------------------------------- */
         List<String> constructors = new ArrayList<>();
@@ -74,7 +83,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
             str += (item.getClass().getName() + " - type : " + item.getAccessSpecifier() + " - parameters :  " + item.getParameters().toString());
             constructors.add(str);
         }
-        record.setConstructor(String.join(" , \n",constructors));
+        record.setConstructor(String.join(" , \n", constructors));
 
         /* ----------------------------------------------- fields ------------------------------------------------ */
         List<String> fields = new ArrayList<>();
@@ -84,7 +93,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
             str += (item.getClass().getName() + " - type : " + (isDefault ? "DEFAULT" : item.getAccessSpecifier()));
             fields.add(str);
         }
-        record.setFields(String.join(" , \n",fields));
+        record.setFields(String.join(" , \n", fields));
 
         /* ----------------------------------------------- methods ----------------------------------------------- */
         /* ----------------------- override  *  has static/final/abstract  method--------------------------------- */
@@ -97,40 +106,74 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
             Optional<AnnotationExpr> overrideAnnotation = method.getAnnotationByName("Override");
             methods.add(method.getName().asString() + " - return type : " + method.getType().asString() + " - parameters : " + method.getParameters().toString());
             if (overrideAnnotation.isPresent()) {
-                overriddenMethods.add( method.getNameAsString() + " - parameters : " + method.getParameters().toString() + " - return type : " + method.getType());
+                overriddenMethods.add(method.getNameAsString() + " - parameters : " + method.getParameters().toString() + " - return type : " + method.getType());
             }
-            if (method.isAbstract()){
+            if (method.isAbstract()) {
                 abstractMethods.add(method.getNameAsString());
-            }
-            else if(method.isFinal()){
+            } else if (method.isFinal()) {
                 finalMethods.add(method.getNameAsString());
-            }
-            else if(method.isStatic()){
+            } else if (method.isStatic()) {
                 staticMethods.add(method.getNameAsString());
             }
         }
-        record.setMethods(String.join(" , \n",methods));
-        record.setOverride(String.join(" , \n",overriddenMethods));
-        record.setHas_static_method(String.join(" , \n",staticMethods));
-        record.setHas_abstract_method(String.join(" , \n",abstractMethods));
-        record.setHas_final_method(String.join(" , \n",finalMethods));
+        record.setMethods(String.join(" , \n", methods));
+        record.setOverride(String.join(" , \n", overriddenMethods));
+        record.setHas_static_method(String.join(" , \n", staticMethods));
+        record.setHas_abstract_method(String.join(" , \n", abstractMethods));
+        record.setHas_final_method(String.join(" , \n", finalMethods));
+    }
 
-        /* -------------------------------- Association (any relationship) --------------------------------------- */
+    private void relationship_analyze(ClassOrInterfaceDeclaration n) {
         List<String> associations = new ArrayList<>();
+        List<String> delegations = new ArrayList<>();
+        List<String> instantiations = new ArrayList<>();
+
+        // reminder for later : .class is to specify we only want class Nodes
         for (ClassOrInterfaceDeclaration classDeclaration : n.findAll(ClassOrInterfaceDeclaration.class)) {
             for (FieldDeclaration field : classDeclaration.getFields()) {
+                // Association (any relationship)
                 if (field.getElementType().isReferenceType()) {
                     associations.add( classDeclaration.getNameAsString() + " -> " + field.getElementType().asReferenceType().toString());
                 }
+                // Delegation
+                if (field.getElementType() instanceof ClassOrInterfaceType fieldType) {
+                    SimpleName fieldName = field.getVariable(0).getName();
+                    for (MethodDeclaration method : classDeclaration.getMethods()) {
+                        for (MethodCallExpr methodCall : method.findAll(MethodCallExpr.class)) {
+                            if (methodCall.getScope().isPresent() && methodCall.getScope().get().toString().equals(fieldName.toString())) {
+                                // Delegation detected: method in classDeclaration forwards a call to a method in fieldType
+                                String str = classDeclaration.getName() + " -> " + fieldType;
+                                if (!delegations.contains(str)) {
+                                    delegations.add(str);
+                                }
+                            }
+                        }
+                    }
+                }
+                // Instantiation - direct : new keyword
+                find_instance_relationship(classDeclaration, instantiations);
             }
         }
         record.setAggregation(String.join(" , \n",associations));
+        record.setDelegation(String.join(" , \n",delegations));
+        record.setInstantiation(String.join(" , \n",instantiations));
 
-        /* ----------------------------------- Composition (has a ownership) ------------------------------------ */
-        /* ----------------------------------------- Aggregation (has a ) --------------------------------------- */
-
-        super.visit(n, arg);
 
     }
 
+
+    private void find_instance_relationship(Node node, List<String> relatedClasses) {
+        //direct
+        if (node instanceof ObjectCreationExpr) {
+            ObjectCreationExpr objectCreationExpr = (ObjectCreationExpr) node;
+            String className = objectCreationExpr.getType().asString();
+            if (!relatedClasses.contains(className)) {
+                relatedClasses.add(className);
+            }
+        }
+        //indirect
+        for (Node child : node.getChildNodes()) {
+            find_instance_relationship(child, relatedClasses);
+        }
+    }
 }

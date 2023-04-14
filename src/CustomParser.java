@@ -77,7 +77,7 @@ public class CustomParser {
                     CompilationUnit cu = StaticJavaParser.parse(file);
                     // Process the CompilationUnit (e.g., analyze, modify, or generate code)
                     // Write the extracted information to an .xlsx file
-                    ClassInfoVisitor classVisitor = new ClassInfoVisitor();
+                    ClassVisitor classVisitor = new ClassVisitor();
                     classVisitor.visit(cu, null); //class related columns
                     classVisitor.record.setPackage_Name(cu.getPackageDeclaration().isPresent() ? cu.getPackageDeclaration().get().getName().asString() : ""); //package name
                     classVisitor.record.setProject_Name(projectName); //TODO project name

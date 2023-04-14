@@ -76,7 +76,7 @@ add or remove a node in the parse tree or replace a name
 everywhere it occurs in the source tree.</P>
 
 <P>Sometimes a TransformAST hands it's work off to a
-ClassInfoVisitor object.  The org.acm.seguin.parser.ChildrenVisitor
+ClassVisitor object.  The org.acm.seguin.parser.ChildrenVisitor
 is a good one to choose as a base class for this visitor.
 It already provides the ability to traverse the entire tree.
 Then all I have to do is overload the specific visit
