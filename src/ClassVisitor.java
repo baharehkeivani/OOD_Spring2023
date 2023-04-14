@@ -1,13 +1,11 @@
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import lombok.Getter;
@@ -16,6 +14,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 
 @Getter
 @Setter
@@ -127,7 +126,8 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         List<String> associations = new ArrayList<>();
         List<String> delegations = new ArrayList<>();
         List<String> instantiations = new ArrayList<>();
-
+        List<String> compositions = new ArrayList<>();
+        List<String> aggregations = new ArrayList<>();
         // reminder for later : .class is to specify we only want class Nodes
         for (ClassOrInterfaceDeclaration classDeclaration : n.findAll(ClassOrInterfaceDeclaration.class)) {
             for (FieldDeclaration field : classDeclaration.getFields()) {
@@ -152,20 +152,32 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
                 }
                 // Instantiation - direct : new keyword
                 find_instance_relationship(classDeclaration, instantiations);
+                //Composition - Aggregation
+                if (!isPrimitive(field.getElementType())) {
+                    if (field.getVariables().stream().anyMatch(v -> v.getInitializer().isPresent())) {
+                        //If the field type is a non-primitive type and the field is initialized within the class, consider it as Composition.
+                        compositions.add(field.toString());
+                    } else {
+                        //If the field type is a non-primitive type and the field is not initialized within the class, consider it as Aggregation.
+                        aggregations.add(field.toString());
+                    }
+                }
             }
         }
         record.setAggregation(String.join(" , \n",associations));
         record.setDelegation(String.join(" , \n",delegations));
         record.setInstantiation(String.join(" , \n",instantiations));
-
-
+        record.setAggregation(String.join(" , \n",aggregations));
+        record.setComposition(String.join(" , \n",compositions));
     }
 
+    private boolean isPrimitive(Type type) {
+        return type.isPrimitiveType() || type.isPrimitiveType() || type.toString().equals("String");
+    }
 
     private void find_instance_relationship(Node node, List<String> relatedClasses) {
         //direct
-        if (node instanceof ObjectCreationExpr) {
-            ObjectCreationExpr objectCreationExpr = (ObjectCreationExpr) node;
+        if (node instanceof ObjectCreationExpr objectCreationExpr) {
             String className = objectCreationExpr.getType().asString();
             if (!relatedClasses.contains(className)) {
                 relatedClasses.add(className);
