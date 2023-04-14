@@ -65,7 +65,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
         List<String> children = new ArrayList<>();
         for (Node item : n.getChildNodes())
             children.add(item.getClass().getName());
-        record.setChildren(children.isEmpty() ? "0" : String.join(" , ",children));
+        record.setChildren(children.isEmpty() ? "0" : String.join(" , \n",children));
 
         /* ------------------------------------------- constructor ----------------------------------------------- */
         List<String> constructors = new ArrayList<>();
@@ -74,7 +74,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
             str += (item.getClass().getName() + " - type : " + item.getAccessSpecifier() + " - parameters :  " + item.getParameters().toString());
             constructors.add(str);
         }
-        record.setConstructor(String.join(" , ",constructors));
+        record.setConstructor(String.join(" , \n",constructors));
 
         /* ----------------------------------------------- fields ------------------------------------------------ */
         List<String> fields = new ArrayList<>();
@@ -84,7 +84,7 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
             str += (item.getClass().getName() + " - type : " + (isDefault ? "DEFAULT" : item.getAccessSpecifier()));
             fields.add(str);
         }
-        record.setFields(String.join(" , ",fields));
+        record.setFields(String.join(" , \n",fields));
 
         /* ----------------------------------------------- methods ----------------------------------------------- */
         /* ----------------------- override  *  has static/final/abstract  method--------------------------------- */
@@ -109,11 +109,11 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
                 staticMethods.add(method.getNameAsString());
             }
         }
-        record.setMethods(String.join(" , ",methods));
-        record.setOverride(String.join(" , ",overriddenMethods));
-        record.setHas_static_method(String.join(" , ",staticMethods));
-        record.setHas_abstract_method(String.join(" , ",abstractMethods));
-        record.setHas_final_method(String.join(" , ",finalMethods));
+        record.setMethods(String.join(" , \n",methods));
+        record.setOverride(String.join(" , \n",overriddenMethods));
+        record.setHas_static_method(String.join(" , \n",staticMethods));
+        record.setHas_abstract_method(String.join(" , \n",abstractMethods));
+        record.setHas_final_method(String.join(" , \n",finalMethods));
 
         /* -------------------------------- Association (any relationship) --------------------------------------- */
         List<String> associations = new ArrayList<>();
@@ -124,8 +124,10 @@ public class ClassInfoVisitor extends VoidVisitorAdapter<Void> {
                 }
             }
         }
-        record.setAggregation(String.join(" , ",associations));
+        record.setAggregation(String.join(" , \n",associations));
 
+        /* ----------------------------------- Composition (has a ownership) ------------------------------------ */
+        /* ----------------------------------------- Aggregation (has a ) --------------------------------------- */
 
         super.visit(n, arg);
 

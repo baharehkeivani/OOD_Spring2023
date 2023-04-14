@@ -65,7 +65,7 @@ public class CustomParser {
         File projectRoot = new File(filePath);
 
         try {
-            workbook = Workbook.createWorkbook(new File(projectName + ".xls"));
+            workbook = Workbook.createWorkbook(new File("outputs/"+projectName + ".xls"));
             sheet = workbook.createSheet("sheet", 0);
             initializeSheet();
 

@@ -167,9 +167,9 @@ public abstract class Editor extends JPanel {
  */
 public final JPopupMenu getPopup() {
 	JPopupMenu popUP = new JPopupMenu();
-	Enumeration enum = getRegistry().getKeys("POPUP");
-	while (enum.hasMoreElements()) {
-		String key = (String) enum.nextElement();
+	Enumeration enumeration = getRegistry().getKeys("POPUP");
+	while (enumeration.hasMoreElements()) {
+		String key = (String) enumeration.nextElement();
 		JMenuItem item = new JMenuItem(key);
 		item.setActionCommand(getRegistry().getString("POPUP", key, key));
 		item.addActionListener(_POPUP_LISTENER);
