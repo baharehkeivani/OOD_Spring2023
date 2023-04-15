@@ -1,5 +1,5 @@
 import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import jxl.Workbook;
@@ -23,13 +23,13 @@ public class CustomParser {
     public static void main(String[] args) throws IOException {
         // Set up JavaParser configuration
         ParserConfiguration config = new ParserConfiguration();
-        StaticJavaParser.setConfiguration(config);
+        JavaParser javaParser = new JavaParser(config);
 
         //Define the root directory of project
         //1
         String filePath = "projects/1 - QuickUML 2001";
         String projectName = "QuickUML 2001";
-
+//
 //        //2
 //        String filePath = "projects/2 - Lexi v0.1.1 alpha";
 //        String projectName = "Lexi v0.1.1 alpha";
@@ -74,15 +74,18 @@ public class CustomParser {
                 System.out.println("Parsing: " + path);
                 try {
                     // Parse the Java file and obtain the CompilationUnit
-                    CompilationUnit cu = StaticJavaParser.parse(file);
-                    // Process the CompilationUnit (e.g., analyze, modify, or generate code)
-                    // Write the extracted information to an .xlsx file
-                    ClassVisitor classVisitor = new ClassVisitor();
-                    classVisitor.visit(cu, null); //class related columns
-                    classVisitor.record.setPackage_Name(cu.getPackageDeclaration().isPresent() ? cu.getPackageDeclaration().get().getName().asString() : ""); //package name
-                    classVisitor.record.setProject_Name(projectName); //TODO project name
-                    writeToXlsx(classVisitor.record);
 
+                    CompilationUnit cu;
+                    if(javaParser.parse(file).getResult().isPresent()){
+                        cu = javaParser.parse(file).getResult().get();
+                        // Process the CompilationUnit (e.g., analyze, modify, or generate code)
+                        // Write the extracted information to an .xlsx file
+                        ClassVisitor classVisitor = new ClassVisitor();
+                        classVisitor.visit(cu, null); //class related columns
+                        classVisitor.record.setPackage_Name(cu.getPackageDeclaration().isPresent() ? cu.getPackageDeclaration().get().getName().asString() : ""); //package name
+                        classVisitor.record.setProject_Name(projectName);
+                        writeToXlsx(classVisitor.record);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
