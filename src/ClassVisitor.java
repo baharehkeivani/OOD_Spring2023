@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+//import org.objectweb.asm.signature.
 
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Getter
@@ -30,7 +32,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
 
     private void class_analyze(ClassOrInterfaceDeclaration n) {
         /* -------------------------------------------- class name ---------------------------------------------- */
-        record.setClass_Name(n.getClass().getName());
+        record.setClass_Name(n.getNameAsString());
 
         /* -------------------------------------------- class type ---------------------------------------------- */
         if (n.isInnerClass()) {
@@ -70,28 +72,36 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         record.setImplements(implementsList.isEmpty() ? "0" : implementsList.toString());
 
         /* ----------------------------------------------- children ---------------------------------------------- */
-        List<String> children = new ArrayList<>();
-        for (Node item : n.getChildNodes())
-            children.add(item.getClass().getName());
-        record.setChildren(children.isEmpty() ? "0" : String.join(" , \n", children));
+        List<ClassOrInterfaceDeclaration> children = CustomParser.classDeclarations.stream()
+                .filter(classDeclaration -> classDeclaration.getExtendedTypes().stream()
+                        .map(ClassOrInterfaceType::getNameAsString)
+                        .anyMatch(name -> name.equals(n.getNameAsString())))
+                .toList();
+        record.setChildren(children.stream()
+                .map(ClassOrInterfaceDeclaration::getNameAsString)
+                .collect(Collectors.joining(" , \n")));
 
         /* ------------------------------------------- constructor ----------------------------------------------- */
         List<String> constructors = new ArrayList<>();
         for (ConstructorDeclaration item : n.getConstructors()) {
             String str = "";
-            str += (item.getClass().getName() + " - type : " + item.getAccessSpecifier() + " - parameters :  " + item.getParameters().toString());
+            str += (item.getNameAsString() + " - type : " + item.getAccessSpecifier() + " - parameters :  " + item.getParameters().toString());
             constructors.add(str);
         }
         record.setConstructor(String.join(" , \n", constructors));
 
         /* ----------------------------------------------- fields ------------------------------------------------ */
         List<String> fields = new ArrayList<>();
-        for (FieldDeclaration item : n.getFields()) {
+        n.findAll(FieldDeclaration.class).forEach(item -> {
             String str = "";
             boolean isDefault = item.getAccessSpecifier().toString().equals("NONE");
-            str += (item.getClass().getName() + " - type : " + (isDefault ? "DEFAULT" : item.getAccessSpecifier()));
-            fields.add(str);
-        }
+            String type =  item.getAccessSpecifier().asString();
+            List<VariableDeclarator> variables = item.getVariables();
+            for (VariableDeclarator var : variables){
+                str += (var.getNameAsString() + " - type : " + (isDefault ? "default" : type));
+                fields.add(str);
+            }
+        });
         record.setFields(String.join(" , \n", fields));
 
         /* ----------------------------------------------- methods ----------------------------------------------- */
@@ -103,7 +113,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         List<String> abstractMethods = new ArrayList<>();
         for (MethodDeclaration method : n.getMethods()) {
             Optional<AnnotationExpr> overrideAnnotation = method.getAnnotationByName("Override");
-            methods.add(method.getName().asString() + " - return type : " + method.getType().asString() + " - parameters : " + method.getParameters().toString());
+            methods.add(method.getNameAsString()+ " - return type : " + method.getType().asString() + " - parameters : " + method.getParameters().toString());
             if (overrideAnnotation.isPresent()) {
                 overriddenMethods.add(method.getNameAsString() + " - parameters : " + method.getParameters().toString() + " - return type : " + method.getType());
             }

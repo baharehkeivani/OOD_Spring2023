@@ -2,6 +2,7 @@ import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import jxl.Workbook;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 public class CustomParser {
@@ -19,6 +21,7 @@ public class CustomParser {
     static WritableWorkbook workbook;// Create a new writable workbook
     static WritableSheet sheet;// Create a new sheet in the workbook
     public static int currentRow = 1;
+    public static List<ClassOrInterfaceDeclaration> classDeclarations = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
         // Set up JavaParser configuration
@@ -26,6 +29,10 @@ public class CustomParser {
         JavaParser javaParser = new JavaParser(config);
 
         //Define the root directory of project
+//        //test
+//        String filePath = "projects/temp";
+//        String projectName = "test";
+
         //1
         String filePath = "projects/1 - QuickUML 2001";
         String projectName = "QuickUML 2001";
@@ -74,7 +81,6 @@ public class CustomParser {
                 System.out.println("Parsing: " + path);
                 try {
                     // Parse the Java file and obtain the CompilationUnit
-
                     CompilationUnit cu;
                     if(javaParser.parse(file).getResult().isPresent()){
                         cu = javaParser.parse(file).getResult().get();
@@ -85,6 +91,8 @@ public class CustomParser {
                         classVisitor.record.setPackage_Name(cu.getPackageDeclaration().isPresent() ? cu.getPackageDeclaration().get().getName().asString() : ""); //package name
                         classVisitor.record.setProject_Name(projectName);
                         writeToXlsx(classVisitor.record);
+                        // Find all ClassOrInterfaceDeclaration objects --> used for finding children of classes
+                        classDeclarations.addAll(cu.findAll(ClassOrInterfaceDeclaration.class));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
