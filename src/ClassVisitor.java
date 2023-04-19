@@ -1,14 +1,23 @@
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.AnnotationExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 //import org.objectweb.asm.signature.
 
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
+
+
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
+import com.github.javaparser.resolution.types.ResolvedReferenceType;
+import com.github.javaparser.resolution.types.ResolvedType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -132,36 +141,52 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         record.setHas_final_method(String.join(" , \n", finalMethods));
     }
 
+    // reminder for later : .class is to specify we only want class Nodes
     private void relationship_analyze(ClassOrInterfaceDeclaration n) {
         List<String> associations = new ArrayList<>();
         List<String> delegations = new ArrayList<>();
         List<String> instantiations = new ArrayList<>();
         List<String> compositions = new ArrayList<>();
         List<String> aggregations = new ArrayList<>();
-        // reminder for later : .class is to specify we only want class Nodes
+
         for (ClassOrInterfaceDeclaration classDeclaration : n.findAll(ClassOrInterfaceDeclaration.class)) {
             for (FieldDeclaration field : classDeclaration.getFields()) {
                 // Association (any relationship)
                 if (field.getElementType().isReferenceType()) {
-                    associations.add( classDeclaration.getNameAsString() + " -> " + field.getElementType().asReferenceType().toString());
+                    associations.add(classDeclaration.getNameAsString() + " -> " + field.getElementType().asReferenceType().toString());
                 }
+
                 // Delegation
                 if (field.getElementType() instanceof ClassOrInterfaceType fieldType) {
-                    SimpleName fieldName = field.getVariable(0).getName();
+                    String fieldName = field.getVariable(0).getNameAsString();
                     for (MethodDeclaration method : classDeclaration.getMethods()) {
                         for (MethodCallExpr methodCall : method.findAll(MethodCallExpr.class)) {
-                            if (methodCall.getScope().isPresent() && methodCall.getScope().get().toString().equals(fieldName.toString())) {
+                            if (methodCall.getScope().isPresent() && isDelegation(fieldType, methodCall.getScope().get())) {
                                 // Delegation detected: method in classDeclaration forwards a call to a method in fieldType
-                                String str = classDeclaration.getName() + " -> " + fieldType;
+                                String str = classDeclaration.getNameAsString() + " -> " + fieldType;
                                 if (!delegations.contains(str)) {
                                     delegations.add(str);
                                 }
                             }
                         }
+                        // also check for method calls to inherited classes
+                        for (ClassOrInterfaceType superClass : classDeclaration.getExtendedTypes()) {
+                            for (MethodCallExpr methodCall : method.findAll(MethodCallExpr.class)) {
+                                if (methodCall.getScope().isPresent() && isDelegation(superClass, methodCall.getScope().get())) {
+                                    // Delegation detected: method in classDeclaration forwards a call to a method in superClass
+                                    String str = classDeclaration.getNameAsString() + " -> " + superClass;
+                                    if (!delegations.contains(str)) {
+                                        delegations.add(str);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+
                 // Instantiation - direct : new keyword
                 find_instance_relationship(classDeclaration, instantiations);
+
                 //Composition - Aggregation
                 if (!isPrimitive(field.getElementType())) {
                     if (field.getVariables().stream().anyMatch(v -> v.getInitializer().isPresent())) {
@@ -174,12 +199,23 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
                 }
             }
         }
+
         record.setAggregation(String.join(" , \n",associations));
         record.setDelegation(String.join(" , \n",delegations));
         record.setInstantiation(String.join(" , \n",instantiations));
         record.setAggregation(String.join(" , \n",aggregations));
         record.setComposition(String.join(" , \n",compositions));
     }
+
+    private boolean isDelegation(ClassOrInterfaceType fieldType, Expression scope) {
+        if (scope instanceof NameExpr) {
+            String scopeName = ((NameExpr) scope).getName().toString();
+            String fieldName = fieldType.getName().toString();
+            return scopeName.equals(fieldName);
+        }
+        return false;
+    }
+
 
     private boolean isPrimitive(Type type) {
         return type.isPrimitiveType() || type.isPrimitiveType() || type.toString().equals("String");
