@@ -33,9 +33,9 @@ public class CustomParser {
 //        String filePath = "projects/temp";
 //        String projectName = "test";
 
-        //1
-        String filePath = "projects/1 - QuickUML 2001";
-        String projectName = "QuickUML 2001";
+//        //1
+//        String filePath = "projects/1 - QuickUML 2001";
+//        String projectName = "QuickUML 2001";
 //
 //        //2
 //        String filePath = "projects/2 - Lexi v0.1.1 alpha";
@@ -65,9 +65,9 @@ public class CustomParser {
 //        String filePath = "projects/8 - Nutch v0.4";
 //        String projectName = "Nutch";
 
-//        //9
-//        String filePath = "projects/9 - PMD v1.8";
-//        String projectName = "PMD";
+        //9
+        String filePath = "projects/9 - PMD v1.8";
+        String projectName = "PMD";
 
         File projectRoot = new File(filePath);
 
