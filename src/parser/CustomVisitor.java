@@ -14,6 +14,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import graph.CustomEdge;
 import graph.Graph;
 import graph.CustomNode;
+
 import xls.XLSRecord;
 
 import java.util.ArrayList;
@@ -21,10 +22,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ClassVisitor extends VoidVisitorAdapter<Void> {
+import lombok.Getter;
 
-    XLSRecord record = new XLSRecord(CustomParser.currentRow);
-    CustomNode current_node;
+@Getter
+public class CustomVisitor extends VoidVisitorAdapter<Void> {
+
+    private XLSRecord record = new XLSRecord(CustomParser.currentRow);
+    private CustomNode current_node;
 
     public void visit(ClassOrInterfaceDeclaration n, Void arg) {
         class_analyze(n);
@@ -129,6 +133,8 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
             } else if (method.isStatic()) {
                 staticMethods.add(method.getNameAsString());
             }
+            //check api calls for microservice projects
+            apiAnalyze(method);
         }
         record.setMethods(String.join(" , \n", methods));
         record.setOverride(String.join(" , \n", overriddenMethods));
@@ -136,6 +142,27 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         record.setHas_abstract_method(String.join(" , \n", abstractMethods));
         record.setHas_final_method(String.join(" , \n", finalMethods));
     }
+
+    private void apiAnalyze(MethodDeclaration md){
+        List<String> apiEndpoints = new ArrayList<>();
+        for (AnnotationExpr annotationExpr : md.getAnnotations()) {
+            /*--------------------------------------------GET--------------------------------------------*/
+            if (annotationExpr.getNameAsString().equals("GET")) {
+                for (MemberValuePair pair : annotationExpr.asNormalAnnotationExpr().getPairs()) {
+                    if (pair.getNameAsString().equals("value")) {
+                        apiEndpoints.add(pair.getValue().asStringLiteralExpr().getValue());
+                    }
+                }
+            }
+            /*-------------------------------------------POST--------------------------------------------*/
+            /*--------------------------------------------PUT--------------------------------------------*/
+            /*------------------------------------------DELETE-------------------------------------------*/
+
+
+        }
+        record.setAPIs(apiEndpoints.toString());
+    }
+
 
     // reminder for later : .class is to specify we only want class Nodes
     private void relationship_analyze(ClassOrInterfaceDeclaration n) {
@@ -200,10 +227,6 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
             }
         }
 
-        /* ----------------------------------------- microservice APIs -------------------------------------------- */
-
-
-
         record.setAggregation(String.join(" , \n", associations));
         record.setDelegation(String.join(" , \n", delegations));
         record.setInstantiation(String.join(" , \n", instantiations));
@@ -219,7 +242,6 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         }
         return false;
     }
-
 
     private boolean isPrimitive(Type type) {
         return type.isPrimitiveType() || type.isPrimitiveType() || type.toString().equals("String");

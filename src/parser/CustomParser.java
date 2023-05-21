@@ -5,7 +5,6 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import graph.GraphVisualizer;
 import jxl.Workbook;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
@@ -34,14 +33,11 @@ public class CustomParser {
         JavaParser javaParser = new JavaParser(config);
 
         //Define the root directory of project
-//        //test
-//        String filePath = "projects/temp";
-//        String projectName = "test";
 
-//        //1
-//        String filePath = "projects/1 - QuickUML 2001";
-//        String projectName = "QuickUML 2001";
-//
+        //1
+        String filePath = "projects/1 - QuickUML 2001";
+        String projectName = "QuickUML 2001";
+
 //        //2
 //        String filePath = "projects/2 - Lexi v0.1.1 alpha";
 //        String projectName = "Lexi v0.1.1 alpha";
@@ -70,9 +66,9 @@ public class CustomParser {
 //        String filePath = "projects/8 - Nutch v0.4";
 //        String projectName = "Nutch";
 
-        //9
-        String filePath = "projects/9 - PMD v1.8";
-        String projectName = "PMD";
+//        //9
+//        String filePath = "projects/9 - PMD v1.8";
+//        String projectName = "PMD";
 
         File projectRoot = new File(filePath);
 
@@ -92,15 +88,13 @@ public class CustomParser {
 
                         // Process the CompilationUnit (e.g., analyze, modify, or generate code)
                         // Write the extracted information to an .xlsx file
-                        ClassVisitor classVisitor = new ClassVisitor();
-                        classVisitor.visit(cu, null); //class related columns
-                        classVisitor.record.setPackage_Name(cu.getPackageDeclaration().isPresent() ? cu.getPackageDeclaration().get().getName().asString() : ""); //package name
-                        classVisitor.record.setProject_Name(projectName);
-                        writeToXlsx(classVisitor.record);
-
+                        CustomVisitor customVisitor = new CustomVisitor();
+                        customVisitor.visit(cu, null); //class related columns
+                        customVisitor.getRecord().setPackage_Name(cu.getPackageDeclaration().isPresent() ? cu.getPackageDeclaration().get().getName().asString() : ""); //package name
+                        customVisitor.getRecord().setProject_Name(projectName);
+                        writeToXlsx(customVisitor.getRecord());
                         // Find all ClassOrInterfaceDeclaration objects --> used for finding children of classes
                         classDeclarations.addAll(cu.findAll(ClassOrInterfaceDeclaration.class));
-
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -113,8 +107,8 @@ public class CustomParser {
             workbook.close();
 
             // graph visualization
-            GraphVisualizer graphVisualizer = new GraphVisualizer();
-            graphVisualizer.visualize();
+//            GraphVisualizer graphVisualizer = new GraphVisualizer();
+//            graphVisualizer.visualize();
 
         } catch (Exception e) {
             e.printStackTrace();
