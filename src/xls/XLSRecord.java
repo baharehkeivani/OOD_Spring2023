@@ -1,3 +1,5 @@
+package xls;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,6 +31,7 @@ public class XLSRecord {
     private String delegation = "";
     private String composition = "";
     private String instantiation = "";
+    private String APIs = "";
 
     public XLSRecord(int row) {
         this.row = row;

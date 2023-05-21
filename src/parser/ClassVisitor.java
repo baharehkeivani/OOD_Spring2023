@@ -1,47 +1,43 @@
+package parser;
+
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-//import org.objectweb.asm.signature.
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.Type;
-
-
-import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
-import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.github.javaparser.resolution.types.ResolvedType;
-import lombok.Getter;
-import lombok.Setter;
+import graph.CustomEdge;
+import graph.Graph;
+import graph.CustomNode;
+import xls.XLSRecord;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
-@Getter
-@Setter
 public class ClassVisitor extends VoidVisitorAdapter<Void> {
 
     XLSRecord record = new XLSRecord(CustomParser.currentRow);
+    CustomNode current_node;
 
     public void visit(ClassOrInterfaceDeclaration n, Void arg) {
         class_analyze(n);
         relationship_analyze(n);
+        Graph.addNode(current_node); //adding Node after analyzing class and its relationship with other classes (Nodes)
         super.visit(n, arg);
     }
 
     private void class_analyze(ClassOrInterfaceDeclaration n) {
         /* -------------------------------------------- class name ---------------------------------------------- */
-        record.setClass_Name(n.getNameAsString());
+        String className = n.getNameAsString();
+        record.setClass_Name(className);
+        current_node = new CustomNode(className);
 
         /* -------------------------------------------- class type ---------------------------------------------- */
         if (n.isInnerClass()) {
@@ -104,9 +100,9 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         n.findAll(FieldDeclaration.class).forEach(item -> {
             String str = "";
             boolean isDefault = item.getAccessSpecifier().toString().equals("NONE");
-            String type =  item.getAccessSpecifier().asString();
+            String type = item.getAccessSpecifier().asString();
             List<VariableDeclarator> variables = item.getVariables();
-            for (VariableDeclarator var : variables){
+            for (VariableDeclarator var : variables) {
                 str += (var.getNameAsString() + " - type : " + (isDefault ? "default" : type));
                 fields.add(str);
             }
@@ -122,7 +118,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         List<String> abstractMethods = new ArrayList<>();
         for (MethodDeclaration method : n.getMethods()) {
             Optional<AnnotationExpr> overrideAnnotation = method.getAnnotationByName("Override");
-            methods.add(method.getNameAsString()+ " - return type : " + method.getType().asString() + " - parameters : " + method.getParameters().toString());
+            methods.add(method.getNameAsString() + " - return type : " + method.getType().asString() + " - parameters : " + method.getParameters().toString());
             if (overrideAnnotation.isPresent()) {
                 overriddenMethods.add(method.getNameAsString() + " - parameters : " + method.getParameters().toString() + " - return type : " + method.getType());
             }
@@ -154,11 +150,11 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
                 // Association (any relationship)
                 if (field.getElementType().isReferenceType()) {
                     associations.add(classDeclaration.getNameAsString() + " -> " + field.getElementType().asReferenceType().toString());
+                    current_node.addEdge(new CustomEdge(current_node, new CustomNode(classDeclaration.getNameAsString()), 2));
                 }
 
                 // Delegation
                 if (field.getElementType() instanceof ClassOrInterfaceType fieldType) {
-                    String fieldName = field.getVariable(0).getNameAsString();
                     for (MethodDeclaration method : classDeclaration.getMethods()) {
                         for (MethodCallExpr methodCall : method.findAll(MethodCallExpr.class)) {
                             if (methodCall.getScope().isPresent() && isDelegation(fieldType, methodCall.getScope().get())) {
@@ -166,6 +162,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
                                 String str = classDeclaration.getNameAsString() + " -> " + fieldType;
                                 if (!delegations.contains(str)) {
                                     delegations.add(str);
+                                    current_node.addEdge(new CustomEdge(current_node, new CustomNode(classDeclaration.getNameAsString()), 5));
                                 }
                             }
                         }
@@ -177,6 +174,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
                                     String str = classDeclaration.getNameAsString() + " -> " + superClass;
                                     if (!delegations.contains(str)) {
                                         delegations.add(str);
+                                        current_node.addEdge(new CustomEdge(current_node, new CustomNode(classDeclaration.getNameAsString()), 5));
                                     }
                                 }
                             }
@@ -192,19 +190,25 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
                     if (field.getVariables().stream().anyMatch(v -> v.getInitializer().isPresent())) {
                         //If the field type is a non-primitive type and the field is initialized within the class, consider it as Composition.
                         compositions.add(field.toString());
+                        current_node.addEdge(new CustomEdge(current_node, new CustomNode(field.toString()), 3));
                     } else {
                         //If the field type is a non-primitive type and the field is not initialized within the class, consider it as Aggregation.
                         aggregations.add(field.toString());
+                        current_node.addEdge(new CustomEdge(current_node, new CustomNode(field.toString()), 7));
                     }
                 }
             }
         }
 
-        record.setAggregation(String.join(" , \n",associations));
-        record.setDelegation(String.join(" , \n",delegations));
-        record.setInstantiation(String.join(" , \n",instantiations));
-        record.setAggregation(String.join(" , \n",aggregations));
-        record.setComposition(String.join(" , \n",compositions));
+        /* ----------------------------------------- microservice APIs -------------------------------------------- */
+
+
+
+        record.setAggregation(String.join(" , \n", associations));
+        record.setDelegation(String.join(" , \n", delegations));
+        record.setInstantiation(String.join(" , \n", instantiations));
+        record.setAggregation(String.join(" , \n", aggregations));
+        record.setComposition(String.join(" , \n", compositions));
     }
 
     private boolean isDelegation(ClassOrInterfaceType fieldType, Expression scope) {

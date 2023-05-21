@@ -1,13 +1,18 @@
+package parser;
+
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import graph.GraphVisualizer;
 import jxl.Workbook;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import xls.DirExplorer;
+import xls.XLSRecord;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,18 +77,19 @@ public class CustomParser {
         File projectRoot = new File(filePath);
 
         try {
-            workbook = Workbook.createWorkbook(new File("outputs/"+projectName + ".xls"));
+            workbook = Workbook.createWorkbook(new File("outputs/" + projectName + ".xls"));
             sheet = workbook.createSheet("sheet", 0);
             initializeSheet();
 
-            // Use DirExplorer to process all Java files in the directory
+            // Use xls.DirExplorer to process all Java files in the directory
             new DirExplorer((level, path, file) -> path.endsWith(".java"), (level, path, file) -> {
                 System.out.println("Parsing: " + path);
                 try {
                     // Parse the Java file and obtain the CompilationUnit
                     CompilationUnit cu;
-                    if(javaParser.parse(file).getResult().isPresent()){
+                    if (javaParser.parse(file).getResult().isPresent()) {
                         cu = javaParser.parse(file).getResult().get();
+
                         // Process the CompilationUnit (e.g., analyze, modify, or generate code)
                         // Write the extracted information to an .xlsx file
                         ClassVisitor classVisitor = new ClassVisitor();
@@ -91,23 +97,32 @@ public class CustomParser {
                         classVisitor.record.setPackage_Name(cu.getPackageDeclaration().isPresent() ? cu.getPackageDeclaration().get().getName().asString() : ""); //package name
                         classVisitor.record.setProject_Name(projectName);
                         writeToXlsx(classVisitor.record);
+
                         // Find all ClassOrInterfaceDeclaration objects --> used for finding children of classes
                         classDeclarations.addAll(cu.findAll(ClassOrInterfaceDeclaration.class));
+
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }).explore(projectRoot);
             // Write and close the workbook
             workbook.write();
             workbook.close();
+
+            // graph visualization
+            GraphVisualizer graphVisualizer = new GraphVisualizer();
+            graphVisualizer.visualize();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private static void writeToXlsx(XLSRecord record) throws IOException {
-        ArrayList<String> contents = new ArrayList<>(Arrays.asList(record.getProject_Name(), record.getPackage_Name(), record.getClass_Name(), String.valueOf(record.getClass_Type()), String.valueOf(record.getClass_Visibility()), String.valueOf(record.getClass_is_Abstract()), String.valueOf(record.getClass_is_Static()), String.valueOf(record.getClass_is_Final()), record.getClass_is_Interface(), record.getExtends(), record.getImplements(), record.getChildren(), record.getConstructor(), record.getFields(), record.getMethods(), record.getOverride(), record.getHas_static_method(), record.getHas_final_method(), record.getHas_abstract_method(), record.getAssociation(), record.getAggregation(), record.getDelegation(), record.getComposition(), record.getInstantiation()));
+        ArrayList<String> contents = new ArrayList<>(Arrays.asList(record.getProject_Name(), record.getPackage_Name(), record.getClass_Name(), String.valueOf(record.getClass_Type()), String.valueOf(record.getClass_Visibility()), String.valueOf(record.getClass_is_Abstract()), String.valueOf(record.getClass_is_Static()), String.valueOf(record.getClass_is_Final()), record.getClass_is_Interface(), record.getExtends(), record.getImplements(), record.getChildren(), record.getConstructor(), record.getFields(), record.getMethods(), record.getOverride(), record.getHas_static_method(), record.getHas_final_method(), record.getHas_abstract_method(), record.getAssociation(), record.getAggregation(), record.getDelegation(), record.getComposition(), record.getInstantiation(), record.getAPIs()));
         for (int i = 0; i < contents.size(); i++) {
             Label label = new Label(i, currentRow, contents.get(i));
             try {
@@ -120,7 +135,7 @@ public class CustomParser {
     }
 
     private static void initializeSheet() {
-        ArrayList<String> contents = new ArrayList<>(Arrays.asList("Project_Name", "Package_Name", "Class_Name", "Class_Type", "Class_Visibility", "Class_is_Abstract", "Class_is_Static", "Class_is_Final", "Class_is_Interface", "Extends", "Implements", "Children", "Constructor", "Fields", "Methods", "Override", "has_static_method", "has_final_method", "has_abstract_method", "association", "aggregation", "delegation", "composition", "instantiation"));
+        ArrayList<String> contents = new ArrayList<>(Arrays.asList("Project_Name", "Package_Name", "Class_Name", "Class_Type", "Class_Visibility", "Class_is_Abstract", "Class_is_Static", "Class_is_Final", "Class_is_Interface", "Extends", "Implements", "Children", "Constructor", "Fields", "Methods", "Override", "has_static_method", "has_final_method", "has_abstract_method", "association", "aggregation", "delegation", "composition", "instantiation", "APIs"));
         for (int i = 0; i < contents.size(); i++) {
             Label label = new Label(i, 0, contents.get(i));
             try {
