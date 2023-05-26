@@ -143,22 +143,44 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
         record.setHas_final_method(String.join(" , \n", finalMethods));
     }
 
-    private void apiAnalyze(MethodDeclaration md){
+    private void apiAnalyze(MethodDeclaration md) {
         List<String> apiEndpoints = new ArrayList<>();
+//        System.out.println(md.getAn.size());
         for (AnnotationExpr annotationExpr : md.getAnnotations()) {
+//            System.out.println(annotationExpr.getNameAsString());
             /*--------------------------------------------GET--------------------------------------------*/
             if (annotationExpr.getNameAsString().equals("GET")) {
+//                for (MemberValuePair pair : annotationExpr.asNormalAnnotationExpr().getPairs()) {
+//                    if (pair.getNameAsString().equals("value")) {
+//                        apiEndpoints.add("GET " + pair.getValue().asStringLiteralExpr().getValue());
+//                    }
+//                }
+                apiEndpoints.add("GET " +  annotationExpr.asNormalAnnotationExpr().asStringLiteralExpr().getValue());
+            }
+            /*-------------------------------------------POST-------------------------------------------*/
+            if (annotationExpr.getNameAsString().equals("POST")) {
                 for (MemberValuePair pair : annotationExpr.asNormalAnnotationExpr().getPairs()) {
                     if (pair.getNameAsString().equals("value")) {
-                        apiEndpoints.add(pair.getValue().asStringLiteralExpr().getValue());
+                        apiEndpoints.add("POST " + pair.getValue().asStringLiteralExpr().getValue());
                     }
                 }
             }
-            /*-------------------------------------------POST--------------------------------------------*/
             /*--------------------------------------------PUT--------------------------------------------*/
+            if (annotationExpr.getNameAsString().equals("PUT")) {
+                for (MemberValuePair pair : annotationExpr.asNormalAnnotationExpr().getPairs()) {
+                    if (pair.getNameAsString().equals("value")) {
+                        apiEndpoints.add("PUT " + pair.getValue().asStringLiteralExpr().getValue());
+                    }
+                }
+            }
             /*------------------------------------------DELETE-------------------------------------------*/
-
-
+            if (annotationExpr.getNameAsString().equals("DELETE")) {
+                for (MemberValuePair pair : annotationExpr.asNormalAnnotationExpr().getPairs()) {
+                    if (pair.getNameAsString().equals("value")) {
+                        apiEndpoints.add("DELETE " + pair.getValue().asStringLiteralExpr().getValue());
+                    }
+                }
+            }
         }
         record.setAPIs(apiEndpoints.toString());
     }
