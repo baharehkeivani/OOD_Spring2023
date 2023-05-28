@@ -1,0 +1,115 @@
+import { shallowMount, createLocalVue } from '@vue/test-utils';
+import axios from 'axios';
+import sinon from 'sinon';
+import { PiniaVuePlugin } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
+
+import { useStore } from '@/store';
+import Settings from '@/account/settings/settings.vue';
+import type SettingsComponent from '@/account/settings/settings.component';
+import { EMAIL_ALREADY_USED_TYPE } from '@/constants';
+
+type SettingsComponentType = Vue & InstanceType<typeof SettingsComponent>;
+
+const localVue = createLocalVue();
+
+const pinia = createTestingPinia({ stubActions: false });
+localVue.use(PiniaVuePlugin);
+const store = useStore();
+
+const axiosStub = {
+  get: sinon.stub(axios, 'get'),
+  post: sinon.stub(axios, 'post'),
+};
+
+describe('Settings Component', () => {
+  let settings: SettingsComponentType;
+  const account = {
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@jhipster.org'
+  };
+
+  beforeEach(() => {
+    axiosStub.get.resolves({});
+    axiosStub.post.reset();
+
+    store.setAuthentication(account);
+    const wrapper = shallowMount<SettingsComponentType>(Settings,
+      {
+        pinia,
+        localVue
+      });
+    settings = wrapper.vm;
+  });
+
+  it('should send the current identity upon save', async () => {
+    // GIVEN
+    axiosStub.post.resolves({});
+
+    // WHEN
+    settings.save();
+    await settings.$nextTick();
+
+    // THEN
+    expect(axiosStub.post.calledWith('api/account', account)).toBeTruthy();
+  });
+
+  it('should notify of success upon successful save', async () => {
+    // GIVEN
+    axiosStub.post.resolves(account);
+
+    // WHEN
+    settings.save();
+    await settings.$nextTick();
+
+    // THEN
+    expect(settings.error).toBeNull();
+    expect(settings.success).toBe('OK');
+  });
+
+  it('should notify of error upon failed save', async () => {
+    // GIVEN
+    const error = { response: { status: 417 } };
+    axiosStub.post.rejects(error);
+
+    // WHEN
+    settings.save();
+    await settings.$nextTick();
+
+    // THEN
+    expect(settings.error).toEqual('ERROR');
+    expect(settings.errorEmailExists).toBeNull();
+    expect(settings.success).toBeNull();
+  });
+
+  it('should notify of error upon error 400', async () => {
+    // GIVEN
+    const error = { response: { status: 400, data: {} } };
+    axiosStub.post.rejects(error);
+
+    // WHEN
+    settings.save();
+    await settings.$nextTick();
+
+    // THEN
+    expect(settings.error).toEqual('ERROR');
+    expect(settings.errorEmailExists).toBeNull();
+    expect(settings.success).toBeNull();
+  });
+
+  it('should notify of error upon email already used', async () => {
+    // GIVEN
+    const error = { response: { status: 400, data: { type: EMAIL_ALREADY_USED_TYPE } } };
+    axiosStub.post.rejects(error);
+
+    // WHEN
+    settings.save();
+    await settings.$nextTick();
+
+    // THEN
+    expect(settings.errorEmailExists).toEqual('ERROR');
+    expect(settings.error).toBeNull();
+    expect(settings.success).toBeNull();
+  });
+});

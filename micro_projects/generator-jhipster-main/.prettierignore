@@ -1,0 +1,10 @@
+node_modules
+docs
+.git
+jdl/**/.jhipster/**
+.vscode-test
+**/templates/**/
+**/jdl-core.min.js
+**/generated-serialized-grammar.js
+test/fixtures/**
+dist

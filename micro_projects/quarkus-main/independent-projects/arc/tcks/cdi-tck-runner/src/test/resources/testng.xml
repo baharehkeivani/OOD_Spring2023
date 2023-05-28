@@ -1,0 +1,229 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="CDI TCK">
+    <listeners>
+        <listener class-name="org.jboss.cdi.tck.impl.testng.ConfigurationLoggingListener"/>
+        <listener class-name="org.jboss.cdi.tck.impl.testng.ProgressLoggingTestListener"/>
+        <listener class-name="org.jboss.cdi.tck.impl.testng.SingleTestClassMethodInterceptor"/>
+    </listeners>
+
+    <test name="CDI Lite TCK">
+        <groups>
+            <run>
+                <exclude name="cdi-full"/>
+                <exclude name="se"/>
+            </run>
+        </groups>
+
+        <packages>
+            <package name="org.jboss.cdi.tck.tests.*"/>
+            <package name="org.jboss.cdi.tck.interceptors.tests.*"/>
+        </packages>
+
+        <classes>
+            <class name="org.jboss.cdi.tck.tests.implementation.simple.lifecycle.SimpleBeanLifecycleTest">
+                <methods>
+                    <exclude name="testInjectionOfParametersIntoBeanConstructor"/>
+                    <exclude name="testCreationExceptionWrapsCheckedExceptionThrownFromCreate"/>
+                    <exclude name="testSubClassInheritsPreDestroyOnSuperclass"/>
+                    <exclude name="testPostConstructPreDestroy"/>
+                    <exclude name="testDependentsDestroyedAfterPreDestroy"/>
+                    <exclude name="testUncheckedExceptionThrownFromCreateNotWrapped"/>
+                    <exclude name="testContextualDestroyDisposesWhenNecessary"/>
+                    <exclude name="testCreateInjectsFieldsDeclaredInJava"/>
+                    <exclude name="testSubClassInheritsPostConstructOnSuperclass"/>
+                    <exclude name="testCreateReturnsSameBeanPushed"/>
+                    <exclude name="testSubClassDoesNotInheritPostConstructOnSuperclassBlockedByIntermediateClass"/>
+                    <exclude name="testBeanCreateInjectsDependenciesAndInvokesInitializerToInstantiateInstance"/>
+                    <exclude name="testQualifierTypeAnnotatedConstructor"/>
+                    <exclude name="testIndirectSubClassInheritsPreDestroyOnSuperclass"/>
+                    <exclude name="testContextCreatesNewInstanceForInjection"/>
+                    <exclude name="testIndirectSubClassInheritsPostConstructOnSuperclass"/>
+                    <exclude name="testSubClassDoesNotInheritPreDestroyConstructOnSuperclassBlockedByIntermediateClass"/>
+                    <exclude name="testManagedBean"/>
+                    <exclude name="testContextualDestroyCatchesException"/>
+                </methods>
+            </class>
+            <!-- must be excluded due to a TCK bug that shall be fixed in CDI TCK 4.0.10 -->
+            <class name="org.jboss.cdi.tck.interceptors.tests.contract.lifecycleCallback.LifecycleCallbackInterceptorTest">
+                <methods>
+                    <exclude name="testPostConstructInterceptor"/>
+                    <exclude name="testProtectedLifecycleInterceptorMethod"/>
+                    <exclude name="testLifeCycleCallbackInterceptorNotInvokedForMethodLevelInterceptor"/>
+                    <exclude name="testSingleMethodInterposingMultipleLifecycleCallbackEvents"/>
+                    <exclude name="testPackagePrivateLifecycleInterceptorMethod"/>
+                    <exclude name="testPreDestroyInterceptor"/>
+                    <exclude name="testAroundInvokeAndLifeCycleCallbackInterceptorsCanBeDefinedOnTheSameClass"/>
+                    <exclude name="testPrivateLifecycleInterceptorMethod"/>
+                    <exclude name="testPublicLifecycleInterceptorMethod"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.interceptors.tests.contract.invocationContext.InvocationContextTest">
+                <methods>
+                    <exclude name="testGetTargetMethod"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.lookup.circular.CircularDependencyTest">
+                <methods>
+                    <exclude name="testCircularInjectionOnTwoNormalBeans"/>
+                    <exclude name="testCircularInjectionOnOneNormalAndOneDependentBean"/>
+                    <exclude name="testNormalProducerMethodDeclaredOnNormalBeanWhichInjectsProducedBean"/>
+                    <exclude name="testSelfConsumingConstructorsOnNormalBean"/>
+                    <exclude name="testNormalAndDependentCircularConstructors"/>
+                    <exclude name="testNormalProducerMethodDeclaredOnDependentBeanWhichInjectsProducedBean"/>
+                    <exclude name="testNormalCircularConstructors"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.context.DestroyForSameCreationalContextTest">
+                <methods>
+                    <exclude name="testDestroyForSameCreationalContextOnly"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.context.DestroyForSameCreationalContext2Test">
+                <methods>
+                    <exclude name="testDestroyForSameCreationalContextOnly"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.definition.scope.ScopeDefinitionTest">
+                <methods>
+                    <exclude name="testScopeTypeHasCorrectTarget"/>
+                    <exclude name="testScopeTypeDeclaresScopeTypeAnnotation"/>
+                    <exclude name="testScopeTypesAreExtensible"/>
+                    <exclude name="testScopeTypeDeclaredInheritedIsBlockedByIntermediateScopeTypeNotMarkedInherited"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.definition.qualifier.builtin.BuiltInQualifierDefinitionTest">
+                <methods>
+                    <exclude name="testDefaultQualifierForInjectionPoint"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.implementation.simple.definition.SimpleBeanDefinitionTest">
+                <methods>
+                    <exclude name="testInitializerAnnotatedConstructor"/>
+                    <exclude name="testInterfaceNotDiscoveredAsSimpleBean"/>
+                    <exclude name="testNonStaticInnerClassDeclaredInJavaNotDiscovered"/>
+                    <exclude name="testEmptyConstructorUsed"/>
+                    <exclude name="testStaticInnerClassDeclaredInJavaAllowed"/>
+                    <exclude name="testInitializerAnnotatedConstructorUsedOverEmptyConstuctor"/>
+                    <exclude name="testDependentScopedBeanCanHaveNonStaticPublicField"/>
+                    <exclude name="testSimpleBeanOnlyIfConstructorParameterless"/>
+                    <exclude name="testExtensionNotDiscoveredAsSimpleBean"/>
+                    <exclude name="testSimpleBeanOnlyIfConstructorIsInitializer"/>
+                    <exclude name="testAbstractClassDeclaredInJavaNotDiscovered"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.interceptors.definition.inheritance.InterceptorBindingInheritanceTest">
+                <methods>
+                    <exclude name="testInterceptorBindingDirectlyInheritedFromManagedBean"/>
+                    <exclude name="testMethodInterceptorBindingDirectlyInheritedFromManagedBean"/>
+                    <exclude name="testMethodInterceptorBindingDirectlyNotInheritedFromManagedBean"/>
+                    <exclude name="testMethodInterceptorBindingIndirectlyInheritedFromManagedBean"/>
+                    <exclude name="testInterceptorBindingIndirectlyInheritedFromManagedBean"/>
+                    <exclude name="testMethodInterceptorBindingIndirectlyNotInheritedFromManagedBean"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.lookup.injectionpoint.InjectionPointTest">
+                <methods>
+                    <exclude name="testApiTypeInjectionPoint"/>
+                    <exclude name="testGetBindingTypes"/>
+                    <exclude name="testGetMemberField"/>
+                    <exclude name="testGetMemberMethod"/>
+                    <exclude name="testNullInjectionPointInjectedIntoNonInjectedObject"/>
+                    <exclude name="testCurrentBinding"/>
+                    <exclude name="testDependentScope"/>
+                    <exclude name="testGetAnnotatedParameter"/>
+                    <exclude name="testGetType"/>
+                    <exclude name="testIsTransient"/>
+                    <exclude name="testGetAnnotatedField"/>
+                    <exclude name="testGetMemberConstructor"/>
+                    <exclude name="testGetBean"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.definition.bean.genericbroken.GenericManagedBeanTest">
+                <methods>
+                    <exclude name="testNonDependentGenericManagedBeanNotOk"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.implementation.simple.lifecycle.unproxyable.UnproxyableManagedBeanTest">
+                <methods>
+                    <exclude name="testNormalScopedUnproxyableBeanWithPublicFinalMethodResolution"/>
+                    <exclude name="testNormalScopedUnproxyableBeanWithPrivateConstructorResolution"/>
+                    <exclude name="testNormalScopedUnproxyableBeanWithFinalClassResolution"/>
+                    <exclude name="testNormalScopedUnproxyableBeanWithPackagePrivateFinalMethodResolution"/>
+                    <exclude name="testNormalScopedUnproxyableBeanWithProtectedFinalMethodResolution"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.event.fires.FireEventTest">
+                <methods>
+                    <exclude name="testFireContainerLifecycleEvent"/>
+                    <exclude name="testInjectedEventCanSpecifyBindingsDynamically"/>
+                    <exclude name="testInjectedEventCanHaveBindings"/>
+                    <exclude name="testInjectedEventAcceptsEventObject"/>
+                    <exclude name="testInjectedAnyEventCanFireEvent"/>
+                    <exclude name="testBeanManagerFireEvent"/>
+                    <exclude name="testEventProvidesMethodForFiringEventsWithCombinationOfTypeAndBindings"/>
+                    <exclude name="testEventSelectedFiresAndObserversNotified"/>
+                    <exclude name="testEventFireThrowsExceptionIfEventObjectTypeContainsUnresovableTypeVariable"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.interceptors.definition.InterceptorDefinitionTest">
+                <methods>
+                    <exclude name="testInstanceOfInterceptorForEveryEnabledInterceptor"/>
+                    <exclude name="testNonBindingTypeToResolveInterceptorsFails"/>
+                    <exclude name="testSameBindingTypesToResolveInterceptorsFails"/>
+                    <exclude name="testResolveInterceptorsReturnsOrderedList"/>
+                    <exclude name="testInterceptorsImplementInterceptorInterface"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.inheritance.generics.MemberLevelInheritanceTest">
+                <methods>
+                    <exclude name="testInjectionPointDefinition"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.definition.scope.inOtherBda.ScopeDefinedInOtherBDATest">
+                <methods>
+                    <exclude name="testCustomScopeInOtherBDAisBeanDefiningAnnotation"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.lookup.dynamic.handle.InstanceHandleTest">
+                <methods>
+                    <exclude name="testGetHandle"/>
+                    <exclude name="testHandles"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.context.dependent.DependentContextTest">
+                <methods>
+                    <exclude name="testContextGetWithCreationalContextReturnsNewInstance"/>
+                    <exclude name="testContextIsActiveWhenInvokingProducerMethod"/>
+                    <exclude name="testDependentsDestroyedWhenProducerMethodCompletes"/>
+                    <exclude name="testContextIsActiveDuringInjection"/>
+                    <exclude name="testInstanceUsedForProducerFieldNotShared"/>
+                    <exclude name="testDependentsDestroyedWhenProducerFieldCompletes"/>
+                    <exclude name="testInstanceUsedForObserverMethodNotShared"/>
+                    <exclude name="testContextGetWithCreateFalseReturnsNull"/>
+                    <exclude name="testContextIsActiveDuringBeanCreation"/>
+                    <exclude name="testDependentsDestroyedWhenObserverMethodEvaluationCompletes"/>
+                    <exclude name="testContextIsActiveWhenInvokingProducerField"/>
+                    <exclude name="testContextIsActiveWhenCreatingObserverMethodInstance"/>
+                    <exclude name="testContextIsActiveWhenInvokingDisposalMethod"/>
+                    <exclude name="testDependentsDestroyedWhenDisposerMethodCompletes"/>
+                    <exclude name="testInstanceUsedForDisposalMethodNotShared"/>
+                    <exclude name="testInstanceUsedForProducerMethodNotShared"/>
+                    <exclude name="testContextIsActive"/>
+                    <exclude name="testContextScopeType"/>
+                    <!-- https://github.com/jakartaee/cdi-tck/issues/454 -->
+                    <exclude name="testDependentScopedInterceptorsAreDependentObjectsOfBean"></exclude>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.context.GetFromContextualTest">
+                <methods>
+                    <exclude name="testGetMayNotCreateNewInstanceUnlessCreationalContextGiven"/>
+                </methods>
+            </class>
+            <class name="org.jboss.cdi.tck.tests.definition.bean.BeanDefinitionTest">
+                <methods>
+                    <exclude name="testBeanClientCanCastBeanInstanceToAnyBeanType"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

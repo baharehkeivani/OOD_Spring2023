@@ -1,0 +1,86 @@
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import axios from 'axios';
+import sinon from 'sinon';
+
+import { PiniaVuePlugin } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
+import { useStore } from '@/store';
+import type SessionsComponent from '@/account/sessions/sessions.component';
+import Sessions from '@/account/sessions/sessions.vue';
+import router from '@/router';
+<%_ if (enableTranslation) { _%>
+import TranslationService from '@/locale/translation.service';
+<%_ } _%>
+
+type SessionsComponentType = Vue & InstanceType<typeof SessionsComponent>;
+
+const localVue = createLocalVue();
+
+const pinia = createTestingPinia({ stubActions: false });
+localVue.use(PiniaVuePlugin);
+const store = useStore();
+
+const axiosStub = {
+  get: sinon.stub(axios, 'get'),
+  delete: sinon.stub(axios, 'delete'),
+};
+
+describe('Sessions Component', () => {
+  let sessions: SessionsComponentType;
+
+  beforeEach(() => {
+    axiosStub.get.reset();
+    axiosStub.get.resolves({ data: [] });
+    axiosStub.delete.reset();
+
+    store.setAuthentication({
+      login: 'username',
+    });
+
+    const wrapper = shallowMount<SessionsComponentType>(Sessions, {
+      pinia,
+      localVue,
+    });
+    sessions = wrapper.vm;
+  });
+
+  it('should call remote service on init', () => {
+    expect(axiosStub.get.callCount).toEqual(1);
+  });
+
+  it('should have good username', () => {
+    expect(sessions.username).toEqual('username');
+  });
+
+  it('should invalidate a session', async () => {
+    // Given
+    axiosStub.get.reset();
+    axiosStub.get.resolves({ data: [] });
+    axiosStub.delete.resolves();
+
+    // When
+    sessions.invalidate('session');
+    await sessions.$nextTick();
+
+    // Then
+    expect(sessions.error).toBeNull();
+    expect(sessions.success).toEqual('OK');
+    expect(axiosStub.get.callCount).toEqual(1);
+  });
+
+  it('should fail to invalidate session', async () => {
+    // Given
+    axiosStub.get.reset();
+    axiosStub.get.resolves({ data: [] });
+    axiosStub.delete.rejects();
+
+    // When
+    sessions.invalidate('session');
+    await sessions.$nextTick();
+
+    // Then
+    expect(sessions.success).toBeNull();
+    expect(sessions.error).toEqual('ERROR');
+    expect(axiosStub.get.callCount).toEqual(0);
+  });
+});

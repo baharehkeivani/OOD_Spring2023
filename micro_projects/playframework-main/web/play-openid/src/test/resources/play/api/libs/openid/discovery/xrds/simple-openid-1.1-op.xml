@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
+-->
+
+<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">
+    <XRD>
+        <Service>
+            <Type>http://openid.net/server/1.1</Type>
+            <URI>http://openidprovider-server-1.1.example.com</URI>
+        </Service>
+    </XRD>
+</xrds:XRDS>

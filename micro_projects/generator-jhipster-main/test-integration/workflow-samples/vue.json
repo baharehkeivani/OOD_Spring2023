@@ -1,0 +1,57 @@
+{
+  "include": [
+    {
+      "name": "vue-default",
+      "app-sample": "vue-default",
+      "entity": "sqlfull"
+    },
+    {
+      "name": "vue-noi18n-mysql-ws-oauth2",
+      "app-sample": "vue-noi18n-ws-oauth2",
+      "entity": "sqlfull"
+    },
+    {
+      "name": "vue-fulli18n-mysql-es",
+      "app-sample": "vue-fulli18n-es",
+      "entity": "sql"
+    },
+    {
+      "name": "vue-gradle-h2mem-ws-session",
+      "app-sample": "vue-gradle-ws-session",
+      "entity": "sql",
+      "environment": "dev"
+    },
+    {
+      "name": "vue-h2disk-ws-theme",
+      "app-sample": "vue-ws-theme",
+      "entity": "sql",
+      "environment": "dev"
+    },
+    {
+      "name": "vue-session-cassandra-fr",
+      "app-sample": "vue-session-cassandra-fr",
+      "entity": "cassandra",
+      "environment": "dev"
+    },
+    {
+      "name": "ms-vue-eureka-jwt-couchbase-hazelcast",
+      "disabled": "needs adjusts for sb3",
+      "jdl-samples": "ms-vue-eureka-jwt-couchbase-hazelcast",
+      "extra-args": "--workspaces --monorepository",
+      "workspaces": "true"
+    },
+    {
+      "name": "ms-mf-vue-consul-oauth2-mysql-memcached",
+      "jdl-samples": "ms-mf-vue-consul-oauth2-mysql-memcached",
+      "extra-args": "--workspaces --monorepository",
+      "workspaces": "true"
+    },
+    {
+      "name": "stack-vue-no-db",
+      "jdl-samples": "stack-vue-no-db",
+      "skip-frontend-tests": "backend tests only",
+      "extra-args": "--workspaces --monorepository",
+      "workspaces": "true"
+    }
+  ]
+}

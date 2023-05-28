@@ -1,0 +1,65 @@
+/*
+ * Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
+ */
+
+package play.data;
+
+import java.util.List;
+import play.data.validation.Constraints;
+import play.libs.Files.TemporaryFile;
+import play.mvc.Http.MultipartFormData.FilePart;
+
+public class Thesis {
+
+  @Constraints.Required
+  @Constraints.MinLength(10)
+  private String title;
+
+  @Constraints.Required private FilePart<TemporaryFile> document;
+
+  @Constraints.Required private List<FilePart<TemporaryFile>> attachments;
+
+  @Constraints.Required private List<FilePart<TemporaryFile>> bibliography;
+
+  @Constraints.Required private List<Letter> letters;
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public FilePart<TemporaryFile> getDocument() {
+    return document;
+  }
+
+  public void setDocument(FilePart<TemporaryFile> document) {
+    this.document = document;
+  }
+
+  public List<FilePart<TemporaryFile>> getAttachments() {
+    return attachments;
+  }
+
+  public void setAttachments(List<FilePart<TemporaryFile>> attachments) {
+    this.attachments = attachments;
+  }
+
+  public List<FilePart<TemporaryFile>> getBibliography() {
+    return bibliography;
+  }
+
+  public void setBibliography(List<FilePart<TemporaryFile>> bibliography) {
+    this.bibliography = bibliography;
+  }
+
+  public List<Letter> getLetters() {
+    return letters;
+  }
+
+  public void setLetters(List<Letter> letters) {
+    this.letters = letters;
+  }
+}

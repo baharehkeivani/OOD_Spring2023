@@ -34,9 +34,9 @@ public class CustomParser {
 
         //Define the root directory of project
 
-        //1
-        String filePath = "projects/1 - QuickUML 2001";
-        String projectName = "QuickUML 2001";
+//        //1
+//        String projectName = "QuickUML 2001";
+//        String filePath = "projects/1 - QuickUML 2001";
 
 //        //2
 //        String filePath = "projects/2 - Lexi v0.1.1 alpha";
@@ -70,6 +70,14 @@ public class CustomParser {
 //        String filePath = "projects/9 - PMD v1.8";
 //        String projectName = "PMD";
 
+//        //10 - micro
+//        String filePath = "micro_projects/axon-server-se-master";
+//        String projectName = "Axon";
+
+        //11 - micro
+        String filePath = "micro_projects/dropwizard-release-2.1.x";
+        String projectName = "dropwizard";
+
         File projectRoot = new File(filePath);
 
         try {
@@ -79,7 +87,7 @@ public class CustomParser {
 
             // Use xls.DirExplorer to process all Java files in the directory
             new DirExplorer((level, path, file) -> path.endsWith(".java"), (level, path, file) -> {
-                System.out.println("Parsing: " + path);
+//                System.out.println("Parsing: " + path); //TODO Uncomment
                 try {
                     // Parse the Java file and obtain the CompilationUnit
                     CompilationUnit cu;

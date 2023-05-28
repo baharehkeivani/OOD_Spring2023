@@ -1,0 +1,28 @@
+[[spring-cloud-sleuth-reference-documentation]]
+= Spring Cloud Sleuth Reference Documentation
+Adrian Cole, Spencer Gibb, Marcin Grzejszczak, Dave Syer, Jay Bryant
+
+== !!!! IMPORTANT !!!!
+
+Spring Cloud Sleuth's last minor version is 3.1. You can check the https://github.com/spring-cloud/spring-cloud-sleuth/tree/3.1.x[3.1.x] branch for the latest commits.
+
+WARNING: Spring Cloud Sleuth will not work with Spring Boot 3.x onward. The last major version of Spring Boot that Sleuth will support is 2.x.
+
+The core of this project got moved to https://micrometer.io/docs/tracing[Micrometer Tracing] project and the instrumentations will be moved to https://micrometer.io/[Micrometer] and all respective projects (no longer all instrumentations will be done in a single repository.
+
+You can check the https://github.com/micrometer-metrics/tracing/wiki/Spring-Cloud-Sleuth-3.1-Migration-Guide[Micrometer Tracing migration guide] to learn how to migrate from Spring Cloud Sleuth to Micrometer Tracing.
+
+:docinfo: shared
+include::_attributes.adoc[]
+
+The reference documentation consists of the following sections:
+
+[horizontal]
+<<legal.adoc#legal,Legal>> :: Legal information.
+<<documentation-overview.adoc#sleuth-documentation-about,Documentation Overview>> :: About the Documentation, Getting Help, First Steps, and more.
+<<getting-started.adoc#getting-started,Getting Started>> :: Introducing {project-full-name}, Developing Your First {project-full-name}-based Application
+<<using.adoc#using,Using {project-full-name}>> :: {project-full-name} usage examples and workflows.
+<<project-features.adoc#features,{project-full-name} Features>> :: Span creation, context propagation, and more.
+<<howto.adoc#howto,"`How-to`" Guides>> :: Add sampling, propagate remote tags, and more.
+<<integrations.adoc#sleuth-integration,{project-full-name} Integrations>> :: Instrumentation configuration, context propagation, and more.
+<<appendix.adoc#appendix,Appendices>> :: Span definitions and configuration properties.

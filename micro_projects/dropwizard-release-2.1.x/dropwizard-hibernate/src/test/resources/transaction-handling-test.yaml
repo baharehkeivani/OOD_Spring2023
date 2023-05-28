@@ -1,0 +1,11 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: 0
+  adminConnectors:
+    - type: http
+      port: 0
+dataSource:
+  user: "sa"
+  driverClass: "org.h2.Driver"
+  validationQuery: "SELECT 1"

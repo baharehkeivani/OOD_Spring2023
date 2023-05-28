@@ -1,0 +1,70 @@
+<%_
+const tsKeyId = this.generateTestEntityId(user.primaryKey.type);
+_%>
+import { shallowMount, createLocalVue } from '@vue/test-utils';
+import axios from 'axios';
+import sinon from 'sinon';
+import { ToastPlugin } from 'bootstrap-vue';
+import VueRouter from 'vue-router';
+
+import UserManagementView from '@/admin/user-management/user-management-view.vue';
+import type UserManagementViewComponent from '@/admin/user-management/user-management-view.component';
+import { Authority } from '@/shared/security/authority';
+
+type UserManagementViewComponentType = Vue & InstanceType<typeof UserManagementViewComponent>;
+
+const localVue = createLocalVue();
+localVue.use(ToastPlugin);
+
+localVue.use(VueRouter);
+
+const axiosStub = {
+  get: sinon.stub(axios, 'get'),
+};
+
+describe('UserManagementView Component', () => {
+  describe('OnInit', () => {
+    it('Should call load all on init', async () => {
+      // GIVEN
+      const userData = {
+        id: 1,
+        login: 'user',
+        firstName: 'first',
+        lastName: 'last',
+        email: 'first@last.com',
+        activated: true,
+        langKey: 'en',
+        authorities: [Authority.USER],
+        createdBy: 'admin',
+        createdDate: null,
+        lastModifiedBy: null,
+        lastModifiedDate: null,
+        password: null,
+      };
+      axiosStub.get.resolves({ data: userData });
+
+      const router = new VueRouter({
+        routes: [{ path: '/:userId' }],
+      });
+      router.push('/' + <%- tsKeyId %>);
+
+      const wrapper = shallowMount<UserManagementViewComponentType>(UserManagementView, {
+        stubs: {
+          'b-badge': true,
+          'router-link': true,
+          'font-awesome-icon': true,
+        },
+        localVue,
+        router,
+      });
+      const userManagementView = wrapper.vm;
+  
+      // WHEN
+      await userManagementView.$nextTick();
+
+      // THEN
+      expect(axiosStub.get.calledWith('api/admin/users/' + <%- tsKeyId %>)).toBeTruthy();
+      expect(userManagementView.user).toEqual(userData);
+    });
+  });
+});

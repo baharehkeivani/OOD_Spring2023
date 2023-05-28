@@ -1,0 +1,58 @@
+import { ref } from 'vue';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import EntitiesMenu from '@/entities/entities-menu.vue';
+import type EntitiesMenuComponent from '@/entities/entities-menu.component';
+import { initI18N } from '@/shared/config/config';
+
+type EntitiesMenuComponentType = Vue & InstanceType<typeof EntitiesMenuComponent>;
+
+const localVue = createLocalVue();
+
+describe('EntitiesMenu', () => {
+  let translationService;
+
+  beforeEach(() => {
+    translationService = { loadTranslations: jest.fn() };
+  });
+
+  describe('using microfrontendI18n', () => {
+    beforeEach(() => {
+      shallowMount<EntitiesMenuComponentType>(EntitiesMenu, {
+        localVue,
+        stubs: {
+          'b-dropdown-item': true,
+          'font-awesome-icon': true,
+        },    
+        provide: {
+          translationService,
+          microfrontendI18n: true,
+          currentLanguage: ref('<%- nativeLanguage %>'),
+        },
+      });
+    });
+
+    it('should load translations', () => {
+      expect(translationService.loadTranslations).toHaveBeenCalled();
+    });
+  });
+
+  describe('not using microfrontendI18n', () => {
+    beforeEach(() => {
+      shallowMount<EntitiesMenuComponentType>(EntitiesMenu, {
+        localVue,
+        stubs: {
+          'b-dropdown-item': true,
+          'font-awesome-icon': true,
+        },    
+        provide: {
+          translationService,
+          microfrontendI18n: false,
+        },
+      });
+    });
+
+    it('should not load translations', () => {
+      expect(translationService.loadTranslations).not.toHaveBeenCalled();
+    });
+  });
+});

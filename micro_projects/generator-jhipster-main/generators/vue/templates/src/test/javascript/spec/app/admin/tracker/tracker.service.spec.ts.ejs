@@ -1,0 +1,93 @@
+import { ref, Ref } from 'vue';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as sinon from 'sinon';
+import VueRouter from 'vue-router';
+import { Subject } from 'rxjs';
+
+import TrackerService, { useTrackerService } from '@/admin/tracker/tracker.service';
+
+const localVue = createLocalVue();
+localVue.use(VueRouter);
+
+describe('Tracker Service', () => {
+  let trackerService: TrackerService;
+  let routerStub: any;
+  let TrackerApp: any;
+  let authenticated: Ref<boolean>;
+
+  let mockStomp: any;
+
+  beforeEach(() => {
+    routerStub = new VueRouter();
+    sinon.stub(routerStub, 'currentRoute').get(() => ({ fullPath: '/' }));
+    routerStub.afterEach = sinon.spy();
+    authenticated = ref(false);
+
+    const watch$ = new Subject<any>();
+
+    mockStomp = {
+      publish: sinon.stub(),
+      watch: sinon.stub().callsFake(() => watch$),
+      configure: sinon.stub(),
+      activate: sinon.stub(),
+      deactivate: sinon.stub(),
+      connectionState$: new Subject<any>(),
+    };
+
+    TrackerApp = {
+      name: 'TrackerApp',
+      template: `
+        <div></div>
+      `,
+      setup() {
+        trackerService = useTrackerService({ stomp: mockStomp });
+        trackerService['buildUrl'] = () => '';
+      },
+    };
+  });
+
+  it('Should subscribe router activity', async () => {
+    shallowMount(TrackerApp, { localVue, router: routerStub, provide: { authenticated } });
+    expect(routerStub.afterEach.calledOnce).toBeTruthy();
+  });
+
+  it('Should call activate on authenticated', async () => {
+    // WHEN
+    authenticated.value = true;
+    shallowMount(TrackerApp, { localVue, router: routerStub, provide: { authenticated } });
+    await localVue.nextTick();
+
+    // THEN
+    expect(mockStomp.activate.calledOnce).toBeTruthy();
+  });
+
+  it('Should send activity on connected', async () => {
+    // GIVEN
+    sinon.stub(routerStub, 'currentRoute').get(() => ({ fullPath: '/admin' }));
+    shallowMount(TrackerApp, { localVue, router: routerStub, provide: { authenticated } });
+
+    // WHEN
+    mockStomp.connectionState$.next(1);
+    await localVue.nextTick();
+
+    // THEN
+    expect(mockStomp.publish.callCount).toBe(1);
+    expect(
+      mockStomp.publish.calledOnceWithExactly({ destination: '/topic/activity', body: JSON.stringify({ page: '/admin' }) })
+    ).toBeTruthy();
+  });
+
+  it('Should disconnect on logout', async () => {
+    // GIVEN
+    authenticated.value = true;
+    shallowMount(TrackerApp, { localVue, router: routerStub, provide: { authenticated } });
+    await localVue.nextTick();
+
+    // WHEN
+    authenticated.value = false;
+    await localVue.nextTick();
+
+    // THEN
+    expect(mockStomp.deactivate.calledOnce).toBeTruthy();
+  });
+});

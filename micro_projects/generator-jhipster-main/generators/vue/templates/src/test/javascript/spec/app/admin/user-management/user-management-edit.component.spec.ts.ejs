@@ -1,0 +1,154 @@
+<%_
+const tsKeyId = this.generateTestEntityId(user.primaryKey.type);
+_%>
+import { shallowMount, createLocalVue, ThisTypedShallowMountOptions } from '@vue/test-utils';
+import axios from 'axios';
+import sinon from 'sinon';
+import VueRouter from 'vue-router';
+import { ToastPlugin } from 'bootstrap-vue';
+
+import UserManagementEdit from '@/admin/user-management/user-management-edit.vue';
+import type UserManagementEditComponent from '@/admin/user-management/user-management-edit.component';
+
+type UserManagementEditComponentType = Vue & InstanceType<typeof UserManagementEditComponent>;
+
+const localVue = createLocalVue();
+localVue.use(VueRouter);
+localVue.use(ToastPlugin);
+
+describe('UserManagementEdit Component', () => {
+  const axiosStub = {
+    get: sinon.stub(axios, 'get'),
+    post: sinon.stub(axios, 'post'),
+    put: sinon.stub(axios, 'put'),
+  };
+  let router: VueRouter;
+  let mountOptions: ThisTypedShallowMountOptions<UserManagementEditComponentType>;
+
+  beforeEach(() => {
+    router = new VueRouter({
+      routes: [
+        {
+          path: '/:userId',
+          name: 'User',
+        },
+      ],
+    });
+    mountOptions = {
+      stubs: {
+        'font-awesome-icon': true,
+      },
+      router,
+      localVue,
+  };
+
+    axiosStub.get.reset();
+    axiosStub.post.reset();
+    axiosStub.put.reset();
+  });
+
+  describe('init', () => {
+    it('Should load user', async () => {
+      // GIVEN
+      axiosStub.get.withArgs('api/admin/users/' + <%- tsKeyId %>).resolves({});
+<%_ if (generateBuiltInAuthorityEntity) { _%>
+      axiosStub.get.withArgs('api/authorities').resolves({ data: [] });
+<%_ } _%>
+      router.push('/' + <%- tsKeyId %>);
+      const wrapper = shallowMount<UserManagementEditComponentType>(UserManagementEdit, mountOptions);
+      const userManagementEdit = wrapper.vm;
+
+      // WHEN
+      await userManagementEdit.$nextTick();
+
+      // THEN
+<%_ if (generateBuiltInAuthorityEntity) { _%>
+      expect(axiosStub.get.calledWith('api/authorities')).toBeTruthy();
+<%_ } _%>
+      expect(axiosStub.get.calledWith('api/admin/users/' + <%- tsKeyId %>)).toBeTruthy();
+    });
+    it('Should open create user', async () => {
+      // GIVEN
+      axiosStub.get.resolves({});
+<%_ if (generateBuiltInAuthorityEntity) { _%>
+      axiosStub.get.withArgs('api/authorities').resolves({ data: [] });
+<%_ } _%>
+      router.push('/');
+      const wrapper = shallowMount<UserManagementEditComponentType>(UserManagementEdit, mountOptions);
+      const userManagementEdit = wrapper.vm;
+
+      // WHEN
+      await userManagementEdit.$nextTick();
+
+      // THEN
+<%_ if (generateBuiltInAuthorityEntity) { _%>
+      expect(axiosStub.get.calledWith('api/authorities')).toBeTruthy();
+      expect(axiosStub.get.callCount).toBe(1);
+<%_ } else { _%>
+      expect(axiosStub.get.notCalled).toBeTruthy();
+<%_ } _%>
+    });
+  });
+
+  describe('save', () => {
+    it('Should call update service on save for existing user', async () => {
+      // GIVEN
+      axiosStub.put.resolves({
+        headers: {
+          'x-<%= frontendAppName.toLowerCase() %>-alert': '',
+          'x-<%= frontendAppName.toLowerCase() %>-params': '',
+        },
+      });
+      axiosStub.get.withArgs('api/admin/users/' + <%- tsKeyId %>).resolves({
+        data: { id: <%- tsKeyId %>, authorities: [] },
+      });
+<%_ if (generateBuiltInAuthorityEntity) { _%>
+      axiosStub.get.withArgs('api/authorities').resolves({ data: [] });
+<%_ } _%>
+      router.push('/' + <%- tsKeyId %>);
+      const wrapper = shallowMount<UserManagementEditComponentType>(UserManagementEdit, mountOptions);
+      const userManagementEdit = wrapper.vm;
+      await userManagementEdit.$nextTick();
+
+      // WHEN
+      userManagementEdit.save();
+      await userManagementEdit.$nextTick();
+
+      // THEN
+      expect(axiosStub.put.calledWith('api/admin/users', { id: <%- tsKeyId %>, authorities: [] })).toBeTruthy();
+      expect(userManagementEdit.isSaving).toEqual(false);
+    });
+
+    it('Should call create service on save for new user', async () => {
+      // GIVEN
+      axiosStub.post.resolves({
+        headers: {
+          'x-<%= frontendAppName.toLowerCase() %>-alert': '',
+          'x-<%= frontendAppName.toLowerCase() %>-params': '',
+        },
+      });
+      axiosStub.get.resolves({});
+<%_ if (generateBuiltInAuthorityEntity) { _%>
+      axiosStub.get.withArgs('api/authorities').resolves({ data: [] });
+<%_ } _%>
+      router.push('/');
+      const wrapper = shallowMount<UserManagementEditComponentType>(UserManagementEdit, mountOptions);
+      const userManagementEdit = wrapper.vm;
+      await userManagementEdit.$nextTick();
+      userManagementEdit.userAccount = { authorities: [] };
+
+      // WHEN
+      userManagementEdit.save();
+      await userManagementEdit.$nextTick();
+
+      // THEN
+      expect(axiosStub.post.calledWith('api/admin/users', {
+        authorities: [],
+<%_ if (!enableTranslation) { _%>
+        langKey: '<%- nativeLanguage %>',
+<%_ } _%>
+      })).toBeTruthy();
+      expect(userManagementEdit.isSaving).toEqual(false);
+    });
+  });
+});

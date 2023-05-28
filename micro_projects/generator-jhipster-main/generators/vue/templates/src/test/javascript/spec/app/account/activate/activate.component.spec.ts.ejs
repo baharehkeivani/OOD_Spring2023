@@ -1,0 +1,59 @@
+import { shallowMount, createLocalVue } from '@vue/test-utils';
+import axios from 'axios';
+import sinon from 'sinon';
+import VueRouter from 'vue-router';
+
+import Activate from '@/account/activate/activate.vue';
+import type ActivateComponent from '@/account/activate/activate.component';
+import ActivateService from '@/account/activate/activate.service';
+import LoginService from '@/account/login.service';
+
+type ActivateComponentType = Vue & InstanceType<typeof ActivateComponent>;
+
+const localVue = createLocalVue();
+
+localVue.use(VueRouter);
+
+const axiosStub = {
+  get: sinon.stub(axios, 'get'),
+  post: sinon.stub(axios, 'post'),
+};
+
+describe('Activate Component', () => {
+  let activate: ActivateComponentType;
+  let loginService: LoginService;
+
+  beforeEach(() => {
+    axiosStub.get.resolves({});
+    const router = new VueRouter();
+    loginService = new LoginService(<% if (!authenticationTypeOauth2) { %>{ emit: jest.fn() }<% } %>);
+
+    const wrapper = shallowMount<ActivateComponentType>(Activate, {
+      localVue,
+      router,
+      provide: {
+        loginService,
+      },
+    });
+    activate = wrapper.vm;
+  });
+
+  it('should display error when activation fails', async () => {
+    axiosStub.get.rejects({});
+    activate.$router.push({ query: { key: 'invalid-key' } });
+    await activate.$nextTick();
+
+    expect(activate.error).toBeTruthy();
+    expect(activate.success).toBeFalsy();
+  });
+
+  it('should display success when activation succeeds', async () => {
+    axiosStub.get.resolves({});
+
+    activate.$router.push({ query: { key: 'valid-key' } });
+    await activate.$nextTick();
+
+    expect(activate.error).toBeFalsy();
+    expect(activate.success).toBeTruthy();
+  });
+});

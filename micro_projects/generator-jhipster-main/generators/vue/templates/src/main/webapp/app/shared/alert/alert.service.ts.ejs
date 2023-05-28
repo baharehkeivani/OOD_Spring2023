@@ -1,0 +1,104 @@
+import type { BvToast } from 'bootstrap-vue';
+import { getCurrentInstance } from 'vue';
+<%_ if (enableTranslation) { _%>
+import type VueI18n from 'vue-i18n';
+import { useI18n } from 'vue-i18n-bridge';
+<%_ } _%>
+
+export const useAlertService = () => {
+  const bvToast = getCurrentInstance().proxy.$bvToast;
+  if (!bvToast) {
+    throw new Error('BootstrapVue toast component was not found');
+  }
+<%_ if (enableTranslation) { _%>
+  const i18n = useI18n() as unknown as VueI18n;
+<%_ } _%>
+  return new AlertService({
+    bvToast,
+<%_ if (enableTranslation) { _%>
+    i18n,
+<%_ } _%>
+  });
+};
+
+export default class AlertService {
+  private bvToast: BvToast;
+<%_ if (enableTranslation) { _%>
+  private i18n: VueI18n;
+<%_ } _%>
+
+  constructor({
+    bvToast,
+<%_ if (enableTranslation) { _%>
+    i18n,
+<%_ } _%>
+  }: {
+    bvToast: BvToast;
+<%_ if (enableTranslation) { _%>
+    i18n: VueI18n,
+<%_ } _%>
+  }) {
+    this.bvToast = bvToast;
+<%_ if (enableTranslation) { _%>
+    this.i18n = i18n;
+<%_ } _%>
+  }
+
+  public showError(message: string, params?: any) {
+<%_ if (enableTranslation) { _%>
+    const alertMessage = this.i18n.t(message, params);
+<%_ } else {_%>
+    const alertMessage = message;
+<%_ } _%>
+    this.bvToast.toast(alertMessage.toString(), {
+      toaster: 'b-toaster-top-center',
+      title: 'Error',
+      variant: 'danger',
+      solid: true,
+      autoHideDelay: 5000,
+    });
+  }
+
+  public showHttpError(httpErrorResponse: any) {
+    switch (httpErrorResponse.status) {
+      case 0:
+        this.showError(<% if (enableTranslation) { %>'error.server.not.reachable'<% } else { %>'Server not reachable'<% } %>);
+        break;
+
+      case 400: {
+        const arr = Object.keys(httpErrorResponse.headers);
+        let errorHeader: string | null = null;
+<%_ if (enableTranslation) { _%>
+        let entityKey: string | null = null;
+<%_ } _%>
+        for (const entry of arr) {
+          if (entry.toLowerCase().endsWith('app-error')) {
+            errorHeader = httpErrorResponse.headers[entry];
+<%_ if (enableTranslation) { _%>
+            } else if (entry.toLowerCase().endsWith('app-params')) {
+              entityKey = httpErrorResponse.headers[entry];
+<%_ } _%>
+            }
+        }
+        if (errorHeader) {
+<%_ if (enableTranslation) { _%>
+          const alertData = entityKey ? { entityName: this.i18n.t(`global.menu.entities.${entityKey}`) } : undefined;
+<%_ } _%>
+          this.showError(errorHeader<% if (enableTranslation) { %>, alertData<% } %>);
+        } else if (httpErrorResponse.data !== '' && httpErrorResponse.data.fieldErrors) {
+          this.showError(<% if (enableTranslation) { %>httpErrorResponse.data.message<% } else { %>'Validation error'<% } %>);
+        } else {
+          this.showError(httpErrorResponse.data.message);
+        }
+        break;
+      }
+
+      case 404:
+        this.showError(<% if (enableTranslation) { %>'error.http.404'<% } else { %>'Not found'<% } %>);
+        break;
+
+      default:
+        this.showError(httpErrorResponse.data.message);
+    }
+  }
+}

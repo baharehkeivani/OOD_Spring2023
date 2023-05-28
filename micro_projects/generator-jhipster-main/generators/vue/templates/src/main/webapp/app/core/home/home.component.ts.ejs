@@ -1,0 +1,32 @@
+import { ComputedRef, defineComponent, inject } from 'vue';
+<%_ if (enableTranslation) { _%>
+import { useI18n } from 'vue-i18n-bridge';
+<%_ } _%>
+
+import LoginService from '@/account/login.service';
+
+export default defineComponent({
+  setup() {
+    const loginService = inject<LoginService>('loginService');
+
+    const authenticated = inject<ComputedRef<boolean>>('authenticated');
+    const username = inject<ComputedRef<string>>('currentUsername');
+
+    const openLogin = () => {
+<%_ if (!authenticationTypeOauth2) { _%>
+      loginService.openLogin();
+<%_ } else { %>
+      loginService.login();
+<%_ } _%>
+    };
+
+    return {
+      authenticated,
+      username,
+      openLogin,
+<%_ if (enableTranslation) { _%>
+      t$: useI18n().t,
+<%_ } _%>
+    };
+  },
+});
