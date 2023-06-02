@@ -41,7 +41,7 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
         /* -------------------------------------------- class name ---------------------------------------------- */
         String className = n.getNameAsString();
         record.setClass_Name(className);
-        current_node = new CustomNode(className);
+        current_node = CustomNode.newNode(className);
 
         /* -------------------------------------------- class type ---------------------------------------------- */
         if (n.isInnerClass()) {
@@ -177,7 +177,7 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
                 // Association (any relationship)
                 if (field.getElementType().isReferenceType()) {
                     associations.add(classDeclaration.getNameAsString() + " -> " + field.getElementType().asReferenceType().toString());
-                    current_node.addEdge(new CustomEdge(current_node, new CustomNode(classDeclaration.getNameAsString()), 2));
+                    current_node.addEdge(new CustomEdge(current_node, CustomNode.newNode(field.getElementType().asReferenceType().toString()), 2));
                 }
 
                 // Delegation
@@ -189,7 +189,7 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
                                 String str = classDeclaration.getNameAsString() + " -> " + fieldType;
                                 if (!delegations.contains(str)) {
                                     delegations.add(str);
-                                    current_node.addEdge(new CustomEdge(current_node, new CustomNode(classDeclaration.getNameAsString()), 5));
+                                    current_node.addEdge(new CustomEdge(current_node, CustomNode.newNode(fieldType.getElementType().asReferenceType().toString()), 5));
                                 }
                             }
                         }
@@ -201,7 +201,7 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
                                     String str = classDeclaration.getNameAsString() + " -> " + superClass;
                                     if (!delegations.contains(str)) {
                                         delegations.add(str);
-                                        current_node.addEdge(new CustomEdge(current_node, new CustomNode(classDeclaration.getNameAsString()), 5));
+                                        current_node.addEdge(new CustomEdge(current_node, CustomNode.newNode(superClass.getNameAsString()), 5));
                                     }
                                 }
                             }
@@ -214,14 +214,15 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
 
                 //Composition - Aggregation
                 if (!isPrimitive(field.getElementType())) {
+                    String otherClassName = field.getElementType().asReferenceType().toString();
                     if (field.getVariables().stream().anyMatch(v -> v.getInitializer().isPresent())) {
                         //If the field type is a non-primitive type and the field is initialized within the class, consider it as Composition.
-                        compositions.add(field.toString());
-                        current_node.addEdge(new CustomEdge(current_node, new CustomNode(field.toString()), 3));
+                        compositions.add(otherClassName);
+                        current_node.addEdge(new CustomEdge(current_node, CustomNode.newNode(otherClassName), 3));
                     } else {
                         //If the field type is a non-primitive type and the field is not initialized within the class, consider it as Aggregation.
-                        aggregations.add(field.toString());
-                        current_node.addEdge(new CustomEdge(current_node, new CustomNode(field.toString()), 7));
+                        aggregations.add(otherClassName);
+                        current_node.addEdge(new CustomEdge(current_node,CustomNode.newNode(otherClassName), 7));
                     }
                 }
             }

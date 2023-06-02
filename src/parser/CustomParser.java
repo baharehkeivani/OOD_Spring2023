@@ -5,6 +5,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import graph.GraphVisualizer;
 import jxl.Workbook;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.batik.anim.timing.Trace.exit;
 
 
 public class CustomParser {
@@ -33,50 +36,86 @@ public class CustomParser {
         JavaParser javaParser = new JavaParser(config);
 
         //Define the root directory of project
-
-//        //1
+        //1
 //        String projectName = "QuickUML 2001";
 //        String filePath = "projects/1 - QuickUML 2001";
 
-//        //2
+        //2
 //        String filePath = "projects/2 - Lexi v0.1.1 alpha";
 //        String projectName = "Lexi v0.1.1 alpha";
 
-//        //3
+        //3
 //        String filePath = "projects/3 - JRefactory v2.6.24";
 //        String projectName = " JRefactory";
 
-//        //4
+        //4
 //        String filePath = "projects/4 - Netbeans v1.0.x (1)";
 //        String projectName = "Netbeans";
 
-//        //5
+        //5
 //        String filePath = "projects/5 - JUnit v3.7";
 //        String projectName = "JUnit";
 
-//        //6
+        //6
 //        String filePath = "projects/6 - JHotDraw v5.1";
 //        String projectName = "JHotDraw";
 
-//        //7
+        //7
 //        String filePath = "projects/7 - MapperXML v1.9.7";
 //        String projectName = "MapperXML";
 
-//        //8
+        //8
 //        String filePath = "projects/8 - Nutch v0.4";
 //        String projectName = "Nutch";
 
-//        //9
+        //9
 //        String filePath = "projects/9 - PMD v1.8";
 //        String projectName = "PMD";
 
-//        //10 - micro
+        //10 - micro
 //        String filePath = "micro_projects/axon-server-se-master";
 //        String projectName = "Axon";
 
         //11 - micro
-        String filePath = "micro_projects/dropwizard-release-2.1.x";
-        String projectName = "dropwizard";
+//        String filePath = "micro_projects/dropwizard-release-2.1.x";
+//        String projectName = "dropwizard";
+
+        //12
+//        String filePath = "micro_projects/axon-server-se-master";
+//        String projectName = "axon-server-se-master";
+
+        //13 --> has no java file :?
+//        String filePath = "micro_projects/generator-jhipster-main";
+//        String projectName = "generator-jhipster-main";
+
+        //14
+//        String filePath = "micro_projects/hazelcast-master";
+//        String projectName = "hazelcast-master";
+
+        //15
+//        String filePath = "micro_projects/playframework-main";
+//        String projectName = "playframework-main";
+
+        //16
+//        String filePath = "micro_projects/quarkus-main";
+//        String projectName = "quarkus-main";
+
+        //17
+//        String filePath = "micro_projects/servicecomb-java-chassis-master";
+//        String projectName = "servicecomb-java-chassis-master";
+
+        //18
+//        String filePath = "micro_projects/spring-cloud-netflix-main";
+//        String projectName = "spring-cloud-netflix-main";
+
+        //19
+//        String filePath = "micro_projects/spring-cloud-sleuth-3.1.x";
+//        String projectName = "spring-cloud-sleuth-3.1.x";
+
+        //20
+        String filePath = "micro_projects/vert.x-master";
+        String projectName = "vert.x-master";
+
 
         File projectRoot = new File(filePath);
 
@@ -87,7 +126,7 @@ public class CustomParser {
 
             // Use xls.DirExplorer to process all Java files in the directory
             new DirExplorer((level, path, file) -> path.endsWith(".java"), (level, path, file) -> {
-//                System.out.println("Parsing: " + path); //TODO Uncomment
+                System.out.println("Parsing: " + path);
                 try {
                     // Parse the Java file and obtain the CompilationUnit
                     CompilationUnit cu;
@@ -113,14 +152,16 @@ public class CustomParser {
             // Write and close the workbook
             workbook.write();
             workbook.close();
-
-            // graph visualization
-//            GraphVisualizer graphVisualizer = new GraphVisualizer();
-//            graphVisualizer.visualize();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // graph visualization
+        GraphVisualizer graphVisualizer = new GraphVisualizer(projectName);
+        graphVisualizer.visualize();
+
+        //forcing application to end
+        System.exit(0);
     }
 
     private static void writeToXlsx(XLSRecord record) throws IOException {

@@ -3,9 +3,6 @@ package graph;
 import java.util.HashSet;
 import java.util.Set;
 
-import lombok.Getter;
-
-@Getter
 public class Graph{
 
     private static Set<CustomNode> nodes; //collection of all nodes

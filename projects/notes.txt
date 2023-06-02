@@ -1,9 +1,0 @@
-Out of the listed open source projects, only QuickUML, Lexi, and Nutch are microservice-based projects.
-
-QuickUML is a microservice-based project for creating UML diagrams. It is built using microservices architecture and is designed to be scalable and flexible.
-
-Lexi is a microservice-based project for building text editors. It uses a microservices architecture to provide a modular and extensible platform for building text editors.
-
-Nutch is a search engine software written in Java that uses microservices architecture for its distributed computing capabilities.
-
-JFactory, Netbeans v1.0, JUnit v3.7, JHotDraw, and PMD are not microservice-based projects. They are monolithic applications or libraries that follow a traditional architecture.
