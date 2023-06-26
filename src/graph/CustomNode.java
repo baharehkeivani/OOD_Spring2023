@@ -11,25 +11,30 @@ import lombok.Setter;
 @Setter
 public class CustomNode {
 
-    private String label;
-    private Set<CustomEdge> edges; //collection of edges to neighbors
+    static int nodeCnt = 0;
 
-    private CustomNode(String label) {
+    private String label;
+    private int index;
+    private Set<CustomEdge> edges; //collection of edges to neighbors
+    private int value = 1; // mean that class has no relationships (among defined types)
+
+    public CustomNode(String label) {
         this.label = label;
         edges = new HashSet<>();
+        index = nodeCnt;
+        nodeCnt++;
     }
 
     public void addEdge(CustomEdge edge) {
+        // phase 2
         edges.add(edge);
-    }
-
-    public static CustomNode newNode(String label){
-        for (CustomNode node : Graph.getNodes()){
-            if(Objects.equals(node.getLabel(), label)){
-                return node;
-            }
+        // phase 3
+        int tmpWeight = 1;
+        if (Objects.equals(this.label, edge.getFrom().getLabel())) {
+            tmpWeight = edge.getIncomeW();
+        } else if (Objects.equals(this.label, edge.getTo().getLabel())) {
+            tmpWeight = edge.getOutcomeW();
         }
-        return new CustomNode(label);
+        this.value *= tmpWeight;
     }
-
 }

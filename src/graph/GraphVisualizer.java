@@ -20,9 +20,11 @@ import java.util.concurrent.TimeUnit;
 public class GraphVisualizer {
 
     private String projectName = "";
+    Graph graph;
 
-    public GraphVisualizer(String projectName) {
+    public GraphVisualizer(String projectName , Graph graph) {
         this.projectName = projectName;
+        this.graph = graph;
     }
 
     public void visualize() {
@@ -37,7 +39,7 @@ public class GraphVisualizer {
         org.gephi.graph.api.Graph gephiGraph = graphModel.getDirectedGraph();
 
         // Add nodes to the Gephi graph
-        for (CustomNode node : Graph.getNodes()) {
+        for (CustomNode node : graph.getNodes()) {
             String nodeId = node.getLabel();
             // Check if the node with the given ID already exists in the graph
             Node existingNode = graphModel.getGraph().getNode(nodeId);
@@ -53,7 +55,7 @@ public class GraphVisualizer {
         }
 
         // Add edges to the Gephi graph
-        for (CustomNode node : Graph.getNodes()) {
+        for (CustomNode node : graph.getNodes()) {
             for (CustomEdge edge : node.getEdges()) {
                 Node fromNode = graphModel.getGraph().getNode(edge.getFrom().getLabel());
                 Node toNode = graphModel.getGraph().getNode(edge.getTo().getLabel());

@@ -1,26 +1,37 @@
 package graph;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
-public class Graph{
+public class Graph {
 
-    private static Set<CustomNode> nodes; //collection of all nodes
-    private static Graph uniqueInstance = new Graph(); //singleton
+    private  Set<CustomNode> nodes; //collection of all nodes
 
-    private Graph() {
+    public Graph() {
         nodes = new HashSet<>();
     }
 
-    public static Graph getGraph(){
-        return uniqueInstance;
+    public Graph(Set<CustomNode> nodes){
+        this.nodes = nodes;
     }
 
-    public static Set<CustomNode> getNodes (){
+    public  Set<CustomNode> getNodes() {
         return nodes;
     }
 
-    public static void addNode(CustomNode node){
+    public  void addNode(CustomNode node) {
         nodes.add(node);
     }
+
+    public CustomNode newNode(String label) {
+        for (CustomNode node :nodes) {
+            if (Objects.equals(node.getLabel(), label)) {
+                return node;
+            }
+        }
+        return new CustomNode(label);
+    }
+
+    // TODO implement enrich
 }

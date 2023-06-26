@@ -5,12 +5,14 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import graph.Graph;
 import graph.GraphVisualizer;
 import jxl.Workbook;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import pattern_detection.MainBodyGraphs;
 import xls.DirExplorer;
 import xls.XLSRecord;
 
@@ -118,6 +120,7 @@ public class CustomParser {
 
 
         File projectRoot = new File(filePath);
+        Graph graph = new Graph();
 
         try {
             workbook = Workbook.createWorkbook(new File("outputs/" + projectName + ".xls"));
@@ -135,7 +138,7 @@ public class CustomParser {
 
                         // Process the CompilationUnit (e.g., analyze, modify, or generate code)
                         // Write the extracted information to an .xlsx file
-                        CustomVisitor customVisitor = new CustomVisitor();
+                        CustomVisitor customVisitor = new CustomVisitor(graph);
                         customVisitor.visit(cu, null); //class related columns
                         customVisitor.getRecord().setPackage_Name(cu.getPackageDeclaration().isPresent() ? cu.getPackageDeclaration().get().getName().asString() : ""); //package name
                         customVisitor.getRecord().setProject_Name(projectName);
@@ -156,9 +159,14 @@ public class CustomParser {
             e.printStackTrace();
         }
 
-        // graph visualization
-        GraphVisualizer graphVisualizer = new GraphVisualizer(projectName);
-        graphVisualizer.visualize();
+        // graph visualization -> phase 2 -> is commented to get better performance while checking phase 3
+//        GraphVisualizer graphVisualizer = new GraphVisualizer(projectName,graph);
+//        graphVisualizer.visualize();
+
+        //pattern detection
+        // TODO enrich the graph
+        MainBodyGraphs bodies = new MainBodyGraphs();
+
 
         //forcing application to end
         System.exit(0);

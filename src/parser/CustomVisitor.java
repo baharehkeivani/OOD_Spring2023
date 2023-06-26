@@ -29,11 +29,16 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
 
     private XLSRecord record = new XLSRecord(CustomParser.currentRow);
     private CustomNode current_node;
+    Graph graph;
+
+    public CustomVisitor( Graph graph){
+        this.graph = graph;
+    }
 
     public void visit(ClassOrInterfaceDeclaration n, Void arg) {
         class_analyze(n);
         relationship_analyze(n);
-        Graph.addNode(current_node); //adding Node after analyzing class and its relationship with other classes (Nodes)
+        graph.addNode(current_node); //adding Node after analyzing class and its relationship with other classes (Nodes)
         super.visit(n, arg);
     }
 
@@ -41,7 +46,7 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
         /* -------------------------------------------- class name ---------------------------------------------- */
         String className = n.getNameAsString();
         record.setClass_Name(className);
-        current_node = CustomNode.newNode(className);
+        current_node = graph.newNode(className);
 
         /* -------------------------------------------- class type ---------------------------------------------- */
         if (n.isInnerClass()) {
@@ -81,14 +86,8 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
         record.setImplements(implementsList.isEmpty() ? "0" : implementsList.toString());
 
         /* ----------------------------------------------- children ---------------------------------------------- */
-        List<ClassOrInterfaceDeclaration> children = CustomParser.classDeclarations.stream()
-                .filter(classDeclaration -> classDeclaration.getExtendedTypes().stream()
-                        .map(ClassOrInterfaceType::getNameAsString)
-                        .anyMatch(name -> name.equals(n.getNameAsString())))
-                .toList();
-        record.setChildren(children.stream()
-                .map(ClassOrInterfaceDeclaration::getNameAsString)
-                .collect(Collectors.joining(" , \n")));
+        List<ClassOrInterfaceDeclaration> children = CustomParser.classDeclarations.stream().filter(classDeclaration -> classDeclaration.getExtendedTypes().stream().map(ClassOrInterfaceType::getNameAsString).anyMatch(name -> name.equals(n.getNameAsString()))).toList();
+        record.setChildren(children.stream().map(ClassOrInterfaceDeclaration::getNameAsString).collect(Collectors.joining(" , \n")));
 
         /* ------------------------------------------- constructor ----------------------------------------------- */
         List<String> constructors = new ArrayList<>();
@@ -177,7 +176,7 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
                 // Association (any relationship)
                 if (field.getElementType().isReferenceType()) {
                     associations.add(classDeclaration.getNameAsString() + " -> " + field.getElementType().asReferenceType().toString());
-                    current_node.addEdge(new CustomEdge(current_node, CustomNode.newNode(field.getElementType().asReferenceType().toString()), 2));
+                    current_node.addEdge(new CustomEdge(current_node, graph.newNode(field.getElementType().asReferenceType().toString()), 2, 11, 13));
                 }
 
                 // Delegation
@@ -189,7 +188,7 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
                                 String str = classDeclaration.getNameAsString() + " -> " + fieldType;
                                 if (!delegations.contains(str)) {
                                     delegations.add(str);
-                                    current_node.addEdge(new CustomEdge(current_node, CustomNode.newNode(fieldType.getElementType().asReferenceType().toString()), 5));
+                                    current_node.addEdge(new CustomEdge(current_node, graph.newNode(fieldType.getElementType().asReferenceType().toString()), 5));
                                 }
                             }
                         }
@@ -201,7 +200,7 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
                                     String str = classDeclaration.getNameAsString() + " -> " + superClass;
                                     if (!delegations.contains(str)) {
                                         delegations.add(str);
-                                        current_node.addEdge(new CustomEdge(current_node, CustomNode.newNode(superClass.getNameAsString()), 5));
+                                        current_node.addEdge(new CustomEdge(current_node, graph.newNode(superClass.getNameAsString()), 5));
                                     }
                                 }
                             }
@@ -218,12 +217,24 @@ public class CustomVisitor extends VoidVisitorAdapter<Void> {
                     if (field.getVariables().stream().anyMatch(v -> v.getInitializer().isPresent())) {
                         //If the field type is a non-primitive type and the field is initialized within the class, consider it as Composition.
                         compositions.add(otherClassName);
-                        current_node.addEdge(new CustomEdge(current_node, CustomNode.newNode(otherClassName), 3));
+                        current_node.addEdge(new CustomEdge(current_node, graph.newNode(otherClassName), 3 , 5 , 7));
                     } else {
                         //If the field type is a non-primitive type and the field is not initialized within the class, consider it as Aggregation.
                         aggregations.add(otherClassName);
-                        current_node.addEdge(new CustomEdge(current_node,CustomNode.newNode(otherClassName), 7));
+                        current_node.addEdge(new CustomEdge(current_node, graph.newNode(otherClassName), 7,5,7));
                     }
+                }
+
+                // Inheritance -> phase 3 (it was needed for paper 2 proposed method)
+                List<ClassOrInterfaceType> extendedTypes = n.getExtendedTypes();
+                for (ClassOrInterfaceType extendedType : extendedTypes) {
+                    String parentClassName = extendedType.getNameAsString();
+                    current_node.addEdge(new CustomEdge( graph.newNode(parentClassName),current_node, 0,2,3));
+                }
+                List<ClassOrInterfaceType> implementedTypes = n.getImplementedTypes();
+                for (ClassOrInterfaceType implementedType : implementedTypes) {
+                    String interfaceName = implementedType.getNameAsString();
+                    current_node.addEdge(new CustomEdge( graph.newNode(interfaceName),current_node, 0,2,3));
                 }
             }
         }
