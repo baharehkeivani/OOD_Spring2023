@@ -21,8 +21,8 @@ public class MainBodyGraphs{
 
         cm.addEdge(new CustomEdge(cm,m,0,2,3));
         cm.addEdge(new CustomEdge(cm,cc,2,11,13));
-        cm.addEdge(new CustomEdge(c,m,2,11,13));
-        cm.addEdge(new CustomEdge(cc,c,0,2,3));
+        c.addEdge(new CustomEdge(c,m,2,11,13));
+        cc.addEdge(new CustomEdge(cc,c,0,2,3));
 
         mediator.addNode(m);
         mediator.addNode(c);
