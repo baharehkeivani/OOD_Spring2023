@@ -166,6 +166,9 @@ public class CustomParser {
         //pattern detection
         // TODO enrich the graph
         MainBodyGraphs bodies = new MainBodyGraphs();
+        if(graph.findSubgraph(bodies.mediator)){
+            System.out.println("\n\nFound Mediator\n\n");;
+        }
 
 
         //forcing application to end
