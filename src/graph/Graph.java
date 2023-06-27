@@ -76,6 +76,7 @@ public class Graph {
         }
 
         for (CustomNode node1 : nodes1) {
+            //
             boolean found = false;
             for (CustomNode node2 : nodes2) {
                 if (areNodesIsomorphic(node1, node2)) {
