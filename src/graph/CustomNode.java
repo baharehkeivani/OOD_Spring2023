@@ -18,6 +18,8 @@ public class CustomNode {
     private Set<CustomEdge> edges; //collection of edges to neighbors
     private int value = 1; // mean that class has no relationships (among defined types)
 
+    private boolean visited = false; // for dfs
+
     public CustomNode(String label) {
         this.label = label;
         edges = new HashSet<>();
@@ -36,5 +38,15 @@ public class CustomNode {
             tmpWeight = edge.getOutcomeW();
         }
         this.value *= tmpWeight;
+    }
+
+    public void DFS() {
+        this.visited = true;
+        for (CustomEdge edge : edges) {
+            CustomNode nextNode = edge.getFrom() == this ? edge.getTo() : edge.getFrom();
+            if (!nextNode.visited) {
+                nextNode.DFS();
+            }
+        }
     }
 }

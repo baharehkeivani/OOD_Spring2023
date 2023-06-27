@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.batik.anim.timing.Trace.exit;
-
 
 public class CustomParser {
 
@@ -39,8 +37,8 @@ public class CustomParser {
 
         //Define the root directory of project
         //1
-//        String projectName = "QuickUML 2001";
-//        String filePath = "projects/1 - QuickUML 2001";
+        String projectName = "QuickUML 2001";
+        String filePath = "projects/1 - QuickUML 2001";
 
         //2
 //        String filePath = "projects/2 - Lexi v0.1.1 alpha";
@@ -115,8 +113,8 @@ public class CustomParser {
 //        String projectName = "spring-cloud-sleuth-3.1.x";
 
         //20
-        String filePath = "micro_projects/vert.x-master";
-        String projectName = "vert.x-master";
+//        String filePath = "micro_projects/vert.x-master";
+//        String projectName = "vert.x-master";
 
 
         File projectRoot = new File(filePath);
@@ -160,14 +158,50 @@ public class CustomParser {
         }
 
         // graph visualization -> phase 2 -> is commented to get better performance while checking phase 3
-//        GraphVisualizer graphVisualizer = new GraphVisualizer(projectName,graph);
-//        graphVisualizer.visualize();
+        GraphVisualizer graphVisualizer = new GraphVisualizer(projectName,graph);
+        graphVisualizer.visualize();
 
         //pattern detection
         // TODO enrich the graph
         MainBodyGraphs bodies = new MainBodyGraphs();
-        if(graph.findSubgraph(bodies.mediator)){
-            System.out.println("\n\nFound Mediator\n\n");;
+        if(graph.findSubgraph(bodies.mediatorGraph)){
+            System.out.println("\n\nFound Mediator\n\n");
+        }
+        if(graph.findSubgraph(bodies.observerGraph)){
+            System.out.println("\n\nFound Observer\n\n");
+        }
+        if(graph.findSubgraph(bodies.singletonGraph)){
+            System.out.println("\n\nFound Singleton\n\n");
+        }
+        if(graph.findSubgraph(bodies.compositeGraph)){
+            System.out.println("\n\nFound Composite\n\n");
+        }
+        if(graph.findSubgraph(bodies.decoratorGraph)){
+            System.out.println("\n\nFound Decorator\n\n");
+        }
+        if(graph.findSubgraph(bodies.stateGraph)){
+            System.out.println("\n\nFound State\n\n");
+        }
+        if(graph.findSubgraph(bodies.strategyGraph)){
+            System.out.println("\n\nFound Strategy\n\n");
+        }
+        if(graph.findSubgraph(bodies.visitorGraph)){
+            System.out.println("\n\nFound Visitor\n\n");
+        }
+        if(graph.findSubgraph(bodies.classAdapterGraph)){
+            System.out.println("\n\nFound Class Adapter\n\n");
+        }
+        if(graph.findSubgraph(bodies.objectAdapterGraph)){
+            System.out.println("\n\nFound Object Adapter\n\n");
+        }
+        if(graph.findSubgraph(bodies.builderGraph)){
+            System.out.println("\n\nFound Builder\n\n");
+        }
+        if(graph.findSubgraph(bodies.factoryMethodGraph)){
+            System.out.println("\n\nFound  Factory Method\n\n");
+        }
+        if(graph.findSubgraph(bodies.abstractFactoryGraph)){
+            System.out.println("\n\nFound Abstract Factory\n\n");
         }
 
 
